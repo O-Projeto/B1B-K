@@ -1,4 +1,5 @@
 #include <VL53L0X.h> 
+#include <BluetoothSerial.h>
 
 #define SCL_SDIST 22
 #define SDA_SDIST 21
@@ -8,6 +9,9 @@
 #define SDIST_3 18
 #define SDIST_4 19
 #define NUM_SENSORS 4
+
+BluetoothSerial SerialBT;
+String device_name = "ESP32-B1B-K";
 
 class VL53_sensors
 {
@@ -25,6 +29,8 @@ public:
     void distanceRead();
     void printDistances();
     void printDistancesSensor(int sensor_num);
+    void printDistancesBT();
+    void printDistancesSensorBT(int sensor_num);
 };
 
 
@@ -69,11 +75,36 @@ void VL53_sensors::printDistances() {
   }
 }
 
+void VL53_sensors::printDistancesBT() {
+  for (uint8_t i = 0; i < number_sensor; i++)
+  {
+      if(SerialBT.available())
+      {
+        SerialBT.print(" ");
+        SerialBT.print(String(i));
+        SerialBT.print(" ");
+        SerialBT.print(dist[i]);
+        SerialBT.println("\t\t");
+      }
+  }
+}
+
 void VL53_sensors::printDistancesSensor(int sensor_num) {
 
     Serial.print(" ");
     Serial.print(String(sensor_num));
     Serial.print(" ");
     Serial.println(dist[sensor_num]);
+
+}
+
+void VL53_sensors::printDistancesSensorBT(int sensor_num) {
+  if(SerialBT.available())
+  {
+    Serial.print(" ");
+    Serial.print(String(sensor_num));
+    Serial.print(" ");
+    Serial.println(dist[sensor_num]);
+  }
 
 }
