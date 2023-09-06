@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <BluetoothSerial.h>
 #include "H_bridge_TB6612.hpp"
 #include "controle_juiz.h"
 #include "led_rgb.h"
@@ -22,8 +23,8 @@
 #define IR_PIN 34
 
 // Pinos QR
-#define qrDir 36
-#define qrEsq 39
+#define qrDir 39
+#define qrEsq 36
 
 // Definição de comandos do controle (Fazer testes no examples/IR pra incrementar mais botões e ajusta-los)
 #define ONE 0
@@ -86,6 +87,7 @@ bool bandeira_flag = false;
 void check_border();
 void attack();
 void printQR ();
+void printQRBT ();
 void strategy_selector();
 
 int left_vel = 0;
@@ -93,6 +95,7 @@ int right_vel = 0;
 
 void setup() {
   Serial.begin(112500);
+  SerialBT.begin(device_name); //Bluetooth device name
   LED.init();
   controle.init();
   LED.set(AZUL);
@@ -110,15 +113,15 @@ void loop() {
   read_sensor_esq = qr_esq.read();
   border_dir = qr_dir.detect_border();
   border_esq = qr_esq.detect_border();
-  // printQR();
+  printQRBT();
 
   // Serial.print("Strategy: ");
   // Serial.println(strategy);
 
-  Serial.print("left_vel: ");
-  Serial.println(left_vel);
-  Serial.print("right_vel: ");
-  Serial.println(right_vel);
+  SerialBT.print("left_vel: ");
+  SerialBT.println(left_vel);
+  SerialBT.print("right_vel: ");
+  SerialBT.println(right_vel);
 
   switch (read_ir) {
     case ONE:
@@ -132,7 +135,7 @@ void loop() {
     case TWO:
       current_time = millis();
       sensores.distanceRead();
-      sensores.printDistances();
+      sensores.printDistancesBT();
       strategy_selector();
       attack();
       check_border();
@@ -161,19 +164,22 @@ void loop() {
       break;
     case FOUR:
       strategy = S0;
-      start_time = millis();
       // tempoPrevio = 0;
+      last_ir = FOUR;
       LED.latch(200, AZUL);
+      start_time = millis();
       break;
     case FIVE:
       strategy = S1;
-      start_time = millis();
       LED.latch(200,VERMELHO);
+      last_ir = FIVE;
+      start_time = millis();
       break;
     case SIX:
       strategy = S2;
-      start_time = millis();
       LED.latch(200, LARANJA);
+      last_ir = SIX;
+      start_time = millis();
       break;
     default:
       start_time = millis();
@@ -192,49 +198,48 @@ void check_border()
   last_line_detected = line_detected;
   if (border_dir && border_esq)
   {  
-    if (current_time - start_time < 1000)
+    if (current_time - start_time < 800)
     {
-      left_vel = 900;
-      right_vel = -900;
+      left_vel = -900;
+      right_vel = 900;
       backwards = 1;
     }
     else
     {
-      left_vel = 0;
-      right_vel = 0;
+      left_vel = 800;
+      right_vel = -300;
       backwards = 0;
     }  
     line_detected = 1;
   }
   else if (border_dir)
   {
-    if (current_time - start_time < 1000)
+    if (current_time - start_time < 600)
     {
-      left_vel = 900;
+      left_vel = -900;
       right_vel = 0;
       backwards = 1;
     }
     else
     {
-      left_vel = 0;
-      right_vel = 0;
+      left_vel = 300;
+      right_vel = 800;
       backwards = 0;
-
     }
     line_detected = 1;
   }
   if (border_esq)
   {
-    if (current_time - start_time < 1000)
+    if (current_time - start_time < 600)
     {
       left_vel = 0;
-      right_vel = -900;
+      right_vel = 900;
       backwards = 1;
     }
     else
     {
-      left_vel = 0;
-      right_vel = 0;
+      left_vel = 800;
+      right_vel = 300;
       backwards = 0;
     }
     line_detected = 1;
@@ -265,64 +270,87 @@ void printQR ()
   Serial.println("\t\t");
 }
 
+void printQRBT ()
+{
+  SerialBT.print(" ");
+  SerialBT.print("read_sensor_dir:");
+  SerialBT.print(" ");
+  SerialBT.print(read_sensor_dir);
+  SerialBT.print(" ");
+  SerialBT.print("bool dir:");
+  SerialBT.print(" ");
+  SerialBT.print(border_dir);
+  SerialBT.println("\t\t");
+  SerialBT.print(" ");
+  SerialBT.print("read_sensor_esq");
+  SerialBT.print(" ");
+  SerialBT.print(read_sensor_esq);
+  SerialBT.print(" ");
+  SerialBT.print("bool esq:");
+  SerialBT.print(" ");
+  SerialBT.print(border_esq);
+  SerialBT.println("\t\t");
+}
+
 void attack()
 {
-  if(sensores.dist[1] <= 30 && sensores.dist[2] <= 30 && bandeira_flag == 0)
+  if(sensores.dist[1] <= 50 && sensores.dist[2] <= 50 && bandeira_flag == 0)
   {
-    left_vel = -950;
-    right_vel = 950;
+    left_vel = 950;
+    right_vel = -950;
   }
   else if(sensores.dist[1] <= 100 && sensores.dist[2] <= 100 && bandeira_flag == 0)
   {
-    left_vel = -700;
-    right_vel = 700;
+    left_vel = 700;
+    right_vel = -700;
   }
   else if(sensores.dist[1] <= 200 && sensores.dist[0] <= 100 && bandeira_flag == 0)
   {
-    left_vel = -700;
-    right_vel = 450;
+    left_vel = 700;
+    right_vel = -450;
   }
   else if(sensores.dist[2] <= 200 && sensores.dist[3] <= 100 && bandeira_flag == 0)
   {
-    left_vel = -450;
-    right_vel = 700;
+    left_vel = 450;
+    right_vel = -700;
   }
   else if (bandeira_flag)
   {
-    if (sensores.dist[1] <= 30 && sensores.dist[2] <= 30 && sensores.dist[3] <= 80 && sensores.dist[0] <= 80)
+    if (sensores.dist[1] <= 50 && sensores.dist[2] <= 50 && sensores.dist[3] <= 80 && sensores.dist[0] <= 80)
     {
-      left_vel = -950;
-      right_vel = 950;
+      left_vel = 950;
+      right_vel = -950;
     }
     else if(sensores.dist[1] <= 100 && sensores.dist[2] <= 100 && sensores.dist[3] <= 200 && sensores.dist[0] <= 200)
     {
-      left_vel = -700;
-      right_vel = 700;
+      left_vel = 700;
+      right_vel = -700;
     }
   }
 }
 
 void strategy_selector()
 {
+  current_time = millis();
   if (strategy == S0)
   {      
-    left_vel = -150;
-    right_vel = 800;
+    left_vel = 150;
+    right_vel = -800;
   }
   if (strategy == S1)
   {
-      left_vel = -800;
-      right_vel = 250;
+      left_vel = 500;
+      right_vel = -250;
   }
   if (strategy == S2)
   {
-    left_vel = -800;
-    right_vel = 150;
+    left_vel = 800;
+    right_vel = -150;
   }
   if (strategy == AFTER_ATTACK)
   {
-    left_vel = -400;
-    right_vel = 200;
+    left_vel = 400;
+    right_vel = -200;
   }
   // else
   // {
