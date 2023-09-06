@@ -113,15 +113,15 @@ void loop() {
   read_sensor_esq = qr_esq.read();
   border_dir = qr_dir.detect_border();
   border_esq = qr_esq.detect_border();
-  printQRBT();
+  // printQRBT();
 
   // Serial.print("Strategy: ");
   // Serial.println(strategy);
 
-  SerialBT.print("left_vel: ");
-  SerialBT.println(left_vel);
-  SerialBT.print("right_vel: ");
-  SerialBT.println(right_vel);
+  // SerialBT.print("left_vel: ");
+  // SerialBT.println(left_vel);
+  // SerialBT.print("right_vel: ");
+  // SerialBT.println(right_vel);
 
   switch (read_ir) {
     case ONE:
@@ -135,7 +135,7 @@ void loop() {
     case TWO:
       current_time = millis();
       sensores.distanceRead();
-      sensores.printDistancesBT();
+      // sensores.printDistancesBT();
       strategy_selector();
       attack();
       check_border();
@@ -143,7 +143,8 @@ void loop() {
       delay(10);
       rightMotor.drive(right_vel);
       delay(10);
-      LED.set(MAGENTA);
+      if(line_detected != 1)
+        LED.set(MAGENTA);
       last_ir = TWO;
       break;
 
@@ -210,6 +211,11 @@ void check_border()
       right_vel = -300;
       backwards = 0;
     }  
+    leftMotor.drive(0); // Comentar dps
+    delay(10); // Comentar dps
+    rightMotor.drive(0); // Comentar dps
+    delay(10); // Comentar dps
+    LED.set(LARANJA);
     line_detected = 1;
   }
   else if (border_dir)
@@ -226,9 +232,14 @@ void check_border()
       right_vel = 800;
       backwards = 0;
     }
+    leftMotor.drive(0); // Comentar dps
+    delay(10); // Comentar dps
+    rightMotor.drive(0); // Comentar dps
+    delay(10); // Comentar dps
+    LED.set(LARANJA);
     line_detected = 1;
   }
-  if (border_esq)
+  else if (border_esq)
   {
     if (current_time - start_time < 600)
     {
@@ -242,10 +253,18 @@ void check_border()
       right_vel = 300;
       backwards = 0;
     }
+    leftMotor.drive(0); // Comentar dps
+    delay(10); // Comentar dps
+    rightMotor.drive(0); // Comentar dps
+    delay(10); // Comentar dps
+    LED.set(LARANJA);
     line_detected = 1;
   }
   else
+  {  
     line_detected = 0;
+    LED.set(MAGENTA);
+  }
 }
 
 void printQR ()

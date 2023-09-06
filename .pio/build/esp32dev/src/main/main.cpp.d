@@ -127,6 +127,14 @@
  C:/Users/Maria\ Francisca/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/spi_flash/include/esp_spi_flash.h \
  C:/Users/Maria\ Francisca/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/spi_flash/include/esp_spi_flash_counters.h \
  C:/Users/Maria\ Francisca/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/esp_hw_support/include/soc/esp32/spiram.h \
+ C:/Users/Maria\ Francisca/.platformio/packages/framework-arduinoespressif32/libraries/BluetoothSerial/src/BluetoothSerial.h \
+ C:/Users/Maria\ Francisca/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/bt/host/bluedroid/api/include/api/esp_gap_bt_api.h \
+ C:/Users/Maria\ Francisca/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/bt/host/bluedroid/api/include/api/esp_bt_defs.h \
+ C:/Users/Maria\ Francisca/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/bt/host/bluedroid/api/include/api/esp_spp_api.h \
+ C:/Users/Maria\ Francisca/.platformio/packages/framework-arduinoespressif32/libraries/BluetoothSerial/src/BTScan.h \
+ C:/Users/Maria\ Francisca/.platformio/packages/framework-arduinoespressif32/cores/esp32/Print.h \
+ C:/Users/Maria\ Francisca/.platformio/packages/framework-arduinoespressif32/libraries/BluetoothSerial/src/BTAddress.h \
+ C:/Users/Maria\ Francisca/.platformio/packages/framework-arduinoespressif32/libraries/BluetoothSerial/src/BTAdvertisedDevice.h \
  src/main/H_bridge_TB6612.hpp src/main/controle_juiz.h \
  .pio/libdeps/esp32dev/IRremote/src/IRremote.h \
  .pio/libdeps/esp32dev/IRremote/src/IRremote.hpp \
