@@ -135,8 +135,10 @@ void loop() {
     
     case TWO:
       current_time = millis();
+      check_border();
       sensores.distanceRead();
       // sensores.printDistancesBT();
+      check_border();
       strategy_selector();
       attack();
       check_border();
