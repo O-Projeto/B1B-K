@@ -214,7 +214,7 @@ void check_border()
       right_vel = -300;
       backwards = 0;
     }  
-    hard_stop (); // Comentar dps
+    // hard_stop (); // Comentar dps
     LED.set(LARANJA);
     line_detected = 1;
   }
@@ -232,7 +232,7 @@ void check_border()
       right_vel = 800;
       backwards = 0;
     }
-    hard_stop (); // Comentar dps
+    // hard_stop (); // Comentar dps
     LED.set(LARANJA);
     line_detected = 1;
   }
@@ -250,7 +250,7 @@ void check_border()
       right_vel = 300;
       backwards = 0;
     }
-    hard_stop (); // Comentar dps
+    // hard_stop (); // Comentar dps
     LED.set(LARANJA);
     line_detected = 1;
   }
