@@ -89,6 +89,7 @@ void attack();
 void printQR ();
 void printQRBT ();
 void strategy_selector();
+void hard_stop ();
 
 int left_vel = 0;
 int right_vel = 0;
@@ -211,10 +212,7 @@ void check_border()
       right_vel = -300;
       backwards = 0;
     }  
-    leftMotor.drive(0); // Comentar dps
-    delay(10); // Comentar dps
-    rightMotor.drive(0); // Comentar dps
-    delay(10); // Comentar dps
+    hard_stop (); // Comentar dps
     LED.set(LARANJA);
     line_detected = 1;
   }
@@ -232,10 +230,7 @@ void check_border()
       right_vel = 800;
       backwards = 0;
     }
-    leftMotor.drive(0); // Comentar dps
-    delay(10); // Comentar dps
-    rightMotor.drive(0); // Comentar dps
-    delay(10); // Comentar dps
+    hard_stop (); // Comentar dps
     LED.set(LARANJA);
     line_detected = 1;
   }
@@ -253,10 +248,7 @@ void check_border()
       right_vel = 300;
       backwards = 0;
     }
-    leftMotor.drive(0); // Comentar dps
-    delay(10); // Comentar dps
-    rightMotor.drive(0); // Comentar dps
-    delay(10); // Comentar dps
+    hard_stop (); // Comentar dps
     LED.set(LARANJA);
     line_detected = 1;
   }
@@ -376,4 +368,13 @@ void strategy_selector()
   //   left_vel = 0;
   //   right_vel = 0;
   // }
+}
+void hard_stop ()
+{
+  leftMotor.drive(0); // Comentar dps
+  delay(10); // Comentar dps
+  rightMotor.drive(0); // Comentar dps
+  delay(10); // Comentar dps
+  left_vel = 0; // Comentar dps
+  right_vel = 0; // Comentar dps
 }
