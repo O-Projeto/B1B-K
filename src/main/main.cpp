@@ -65,8 +65,8 @@ Motor leftMotor = Motor(BIN1, BIN2, PWMB, STBY, 2, 10);
 led_rgb LED;
 
 // Objeto QR
-refletancia qr_dir(qrDir, 2000);
-refletancia qr_esq(qrEsq, 2000);
+refletancia qr_dir(qrDir, 3700);
+refletancia qr_esq(qrEsq, 3700);
 
 float  read_sensor_dir = 0;
 float read_sensor_esq = 0; 
@@ -347,18 +347,18 @@ void strategy_selector()
   current_time = millis();
   if (strategy == S0)
   {      
-    left_vel = 150;
-    right_vel = -800;
+    left_vel = 200;
+    right_vel = -200;
   }
   if (strategy == S1)
   {
-      left_vel = 500;
-      right_vel = -250;
+      left_vel = 250;
+      right_vel = -200;
   }
   if (strategy == S2)
   {
-    left_vel = 800;
-    right_vel = -150;
+    left_vel = 200;
+    right_vel = -250;
   }
   if (strategy == AFTER_ATTACK)
   {
