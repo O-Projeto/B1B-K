@@ -108,7 +108,9 @@ void setup() {
 void loop() {
   read_ir = controle.read();
   if (last_ir == TWO && (read_ir == ONE || read_ir == -1))
+  {
     read_ir = TWO;
+  }
   
   read_sensor_dir = qr_dir.read();
   read_sensor_esq = qr_esq.read();
