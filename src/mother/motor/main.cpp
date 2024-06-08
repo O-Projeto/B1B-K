@@ -37,7 +37,7 @@ void setup() {
 }
 
 void loop() {
-
+/*
   //PWM for the right motor
   for(int i=0; i< 1000; i++) { // anda pra frente e a velocidade aumenta até o maximo
     motor1.drive(i);
@@ -96,5 +96,8 @@ void loop() {
     motor2.drive(k);
     Serial.println(k);
     delay(10);
-  }
-}
+  }*/
+
+ motor1.drive(1000);
+ motor2.drive(1000);
+ }

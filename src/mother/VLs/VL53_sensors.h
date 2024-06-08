@@ -4,10 +4,10 @@
 #define SCL_SDIST 22
 #define SDA_SDIST 21
 
-#define SDIST_1 16 //change the pins  
-#define SDIST_2 17 
-#define SDIST_3 18
-#define SDIST_4 19
+#define SDIST_DR 16 //change the pins  
+#define SDIST_C_DR 17 
+#define SDIST_C_ESQ 18
+#define SDIST_ESQ 19
 #define NUM_SENSORS 4
 
 class VL53_sensors
@@ -16,7 +16,7 @@ private:
     /* data */
 public:
     int number_sensor = NUM_SENSORS; // change this value 
-    int x_shut_pins[NUM_SENSORS] = {SDIST_1, SDIST_2, SDIST_3, SDIST_4} ; 
+    int x_shut_pins[NUM_SENSORS] = {SDIST_DR, SDIST_C_DR, SDIST_C_ESQ, SDIST_ESQ} ; 
     int dist[NUM_SENSORS];
     int offset[NUM_SENSORS] = {10, 0, 40, 0}; // ???
 

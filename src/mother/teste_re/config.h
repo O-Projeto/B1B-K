@@ -13,3 +13,6 @@
 // line up with function names like forward.  Value can be 1 or -1
 const int offsetA = 1;
 const int offsetB = 2;
+
+#define qrDir 39
+#define qrEsq 36

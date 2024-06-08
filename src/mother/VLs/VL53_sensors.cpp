@@ -37,9 +37,12 @@ void VL53_sensors::printDistances() {
        Serial.print(String(i));
        Serial.print(" ");
        Serial.print(dist[i]);
-
-      Serial.println("\t\t");
+       Serial.print(",  ");
+      //Serial.println("\t\t");
+      
   }
+  Serial.println("\t\t");
+  delay(1000);
 }
 
 void VL53_sensors::printDistancesSensor(int sensor_num) {
