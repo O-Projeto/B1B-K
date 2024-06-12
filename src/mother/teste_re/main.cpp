@@ -2,6 +2,7 @@
 #include "config.h"
 #include "refletancia.h"
 #include <Arduino.h>
+#include "mother/IR/controle_juiz.h"
 
 
 // Initializing motors.  The library will allow you to initialize as many
@@ -22,11 +23,16 @@ float current_time = 0;
 float tempoRe=0;
 bool flagRe= 0;
 
+int read_ir = -1;
+int last_ir = 0;
+
 int vel_motor_1;
 int vel_motor_2;
 
-refletancia qr_dir(qrDir, 2700);
-refletancia qr_esq(qrEsq, 2700);
+refletancia qr_dir(qrDir, 2400);
+refletancia qr_esq(qrEsq, 2400);
+
+controle_juiz controle_sony(34);
 
 void check_border();
 void attack();
@@ -34,27 +40,38 @@ void re();
 void andar(int mot1, int mot2);
 
 void setup() {
-
   Serial.begin(115200);
+  controle_sony.init();
 }
 
 
 void loop (){
-
+  read_ir = controle_sony.read();
+  if (last_ir == TWO && (read_ir == ONE || read_ir == -1))
+  {
+    read_ir = TWO;
+  }
     read_sensor_dir = qr_dir.read();
     read_sensor_esq = qr_esq.read();
     border_dir = qr_dir.detect_border();
     border_esq = qr_esq.detect_border();
-
+    
+switch (read_ir)
+{
+  case ONE:
+    andar(0,0);
+    break;
+  case TWO:
     check_border();
     attack();
     check_border();
     re();
-       // set 800ms tempo de re
-    //atacar
-      //  re é 0
-        //andar pra frente
     andar(vel_motor_1,vel_motor_2);
+    break;
+  default:
+  break;
+}
+   read_ir = controle_sony.read();
 }
 
 void andar(int mot1, int mot2){
@@ -63,10 +80,10 @@ void andar(int mot1, int mot2){
 }
 
 void re(){
-
-    if(current_time- start_time > tempoRe && flagRe){
-        vel_motor_1 = -1000;
-        vel_motor_2 = -1000;
+    current_time = millis();
+    if(current_time - start_time < tempoRe && flagRe){
+        vel_motor_1 = -500;
+        vel_motor_2 = -560;
     } else{        
         tempoRe = 0;
         flagRe = 0;
@@ -74,7 +91,7 @@ void re(){
 }
 void check_border()
 {
-  if (line_detected != last_line_detected && backwards == 0)
+  if (line_detected != last_line_detected)
   {
     start_time = millis();
   }
@@ -84,8 +101,9 @@ void check_border()
     line_detected = 1;
     flagRe = 1;
   }
+  else {line_detected=0;}
   }
 void attack(){
         vel_motor_1 = 500;
-        vel_motor_2 = 500;
+        vel_motor_2 = 560;
 }

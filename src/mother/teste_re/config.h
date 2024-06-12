@@ -3,11 +3,16 @@
 // the exception of STBY which the Redbot controls with a physical switch
 #define AIN1 25
 #define BIN1 27
-#define AIN2 22
+#define AIN2 33
 #define BIN2 14
 #define PWMA 32
 #define PWMB 13
 #define STBY 26
+
+#define ONE 0
+#define TWO 1
+#define TREE 2
+#define POWER 21
 
 // these constants are used to allow you to make your motor configuration 
 // line up with function names like forward.  Value can be 1 or -1
