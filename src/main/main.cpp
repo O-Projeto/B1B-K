@@ -276,34 +276,34 @@ void attack()
   if(sensores.dist[1] <= 50 && sensores.dist[2] <= 50 && bandeira_flag == 0)
   {
     left_vel = 950;
-    right_vel = -950;
+    right_vel = 950;
   }
   else if(sensores.dist[1] <= 100 && sensores.dist[2] <= 100 && bandeira_flag == 0)
   {
     left_vel = 700;
-    right_vel = -700;
+    right_vel = 700;
   }
   else if(sensores.dist[1] <= 200 && sensores.dist[0] <= 100 && bandeira_flag == 0)
   {
     left_vel = 700;
-    right_vel = -450;
+    right_vel = 450;
   }
   else if(sensores.dist[2] <= 200 && sensores.dist[3] <= 100 && bandeira_flag == 0)
   {
     left_vel = 450;
-    right_vel = -700;
+    right_vel = 700;
   }
   else if (bandeira_flag)
   {
     if (sensores.dist[1] <= 50 && sensores.dist[2] <= 50 && sensores.dist[3] <= 80 && sensores.dist[0] <= 80)
     {
       left_vel = 950;
-      right_vel = -950;
+      right_vel = 950;
     }
     else if(sensores.dist[1] <= 100 && sensores.dist[2] <= 100 && sensores.dist[3] <= 200 && sensores.dist[0] <= 200)
     {
       left_vel = 700;
-      right_vel = -700;
+      right_vel = 700;
     }
   }
 }
@@ -314,22 +314,22 @@ void strategy_selector()
   if (strategy == S0)
   {      
     left_vel = 200;
-    right_vel = -200;
+    right_vel = 200;
   }
   if (strategy == S1)
   {
       left_vel = 250;
-      right_vel = -200;
+      right_vel = 200;
   }
   if (strategy == S2)
   {
     left_vel = 200;
-    right_vel = -250;
+    right_vel = 250;
   }
   if (strategy == AFTER_ATTACK)
   {
     left_vel = 400;
-    right_vel = -200;
+    right_vel = 200;
   }
   // else
   // {

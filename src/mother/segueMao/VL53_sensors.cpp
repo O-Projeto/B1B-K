@@ -1,5 +1,4 @@
-#include "VL53_sensors.h"
-
+#include "VL53_sensors.hpp"
 
 void VL53_sensors::sensorsInit() {
 
@@ -57,11 +56,13 @@ void VL53_sensors::printDistancesSensor(int sensor_num) {
 
 int VL53_sensors::PesosDistancias()
 { 
-  int pesos = 10, Media[number_sensor], distancia=0;
+  int Media[number_sensor] = {25,5,-5,-25}, distanciaP=0, distanciaN=0;
   for (int i=0; i<=number_sensor; i++){
-    Media[i] = dist[i]*pesos;
-    pesos = pesos * 10;
-    distancia+=Media[i];
+    if (dist[i]>220){dist[i]=0;}
+    Media[i] = dist[i]*Media[i];
   }
-    return distancia/11110;
+    distanciaP=(Media[0]+Media[1])/30;
+    distanciaN=(Media[2]+Media[3])/30;
+    if (distanciaP == 0 && distanciaN == 0){return -1;}
+    return (distanciaP+distanciaN);
 }

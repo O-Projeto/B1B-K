@@ -10,7 +10,10 @@
             "includePath": [
                 "c:/Users/pastu/OneDrive/Documentos/b1bk/B1B-K/include",
                 "c:/Users/pastu/OneDrive/Documentos/b1bk/B1B-K/src",
-                "c:/Users/pastu/OneDrive/Documentos/b1bk/B1B-K/.pio/libdeps/motherRe/IRremote/src",
+                "c:/Users/pastu/OneDrive/Documentos/b1bk/B1B-K/.pio/libdeps/seguemao/IRremote/src",
+                "c:/Users/pastu/OneDrive/Documentos/b1bk/B1B-K/.pio/libdeps/seguemao/Adafruit NeoPixel",
+                "c:/Users/pastu/OneDrive/Documentos/b1bk/B1B-K/.pio/libdeps/seguemao/VL53L0X",
+                "C:/Users/pastu/.platformio/packages/framework-arduinoespressif32/libraries/Wire/src",
                 "C:/Users/pastu/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/newlib/platform_include",
                 "C:/Users/pastu/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/freertos/include",
                 "C:/Users/pastu/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/freertos/include/esp_additions/freertos",
@@ -233,7 +236,6 @@
                 "C:/Users/pastu/.platformio/packages/framework-arduinoespressif32/libraries/WiFi/src",
                 "C:/Users/pastu/.platformio/packages/framework-arduinoespressif32/libraries/WiFiClientSecure/src",
                 "C:/Users/pastu/.platformio/packages/framework-arduinoespressif32/libraries/WiFiProv/src",
-                "C:/Users/pastu/.platformio/packages/framework-arduinoespressif32/libraries/Wire/src",
                 ""
             ],
             "browse": {
@@ -241,7 +243,10 @@
                 "path": [
                     "c:/Users/pastu/OneDrive/Documentos/b1bk/B1B-K/include",
                     "c:/Users/pastu/OneDrive/Documentos/b1bk/B1B-K/src",
-                    "c:/Users/pastu/OneDrive/Documentos/b1bk/B1B-K/.pio/libdeps/motherRe/IRremote/src",
+                    "c:/Users/pastu/OneDrive/Documentos/b1bk/B1B-K/.pio/libdeps/seguemao/IRremote/src",
+                    "c:/Users/pastu/OneDrive/Documentos/b1bk/B1B-K/.pio/libdeps/seguemao/Adafruit NeoPixel",
+                    "c:/Users/pastu/OneDrive/Documentos/b1bk/B1B-K/.pio/libdeps/seguemao/VL53L0X",
+                    "C:/Users/pastu/.platformio/packages/framework-arduinoespressif32/libraries/Wire/src",
                     "C:/Users/pastu/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/newlib/platform_include",
                     "C:/Users/pastu/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/freertos/include",
                     "C:/Users/pastu/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/freertos/include/esp_additions/freertos",
@@ -464,7 +469,6 @@
                     "C:/Users/pastu/.platformio/packages/framework-arduinoespressif32/libraries/WiFi/src",
                     "C:/Users/pastu/.platformio/packages/framework-arduinoespressif32/libraries/WiFiClientSecure/src",
                     "C:/Users/pastu/.platformio/packages/framework-arduinoespressif32/libraries/WiFiProv/src",
-                    "C:/Users/pastu/.platformio/packages/framework-arduinoespressif32/libraries/Wire/src",
                     ""
                 ]
             },

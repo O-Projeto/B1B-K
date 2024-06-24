@@ -1,5 +1,5 @@
 #include <Arduino.h>
-#include "controle_juiz.h"
+#include "controle_juiz.hpp"
 
 #define ONE 0
 #define TWO 1

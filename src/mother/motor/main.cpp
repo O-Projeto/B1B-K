@@ -98,6 +98,6 @@ void loop() {
     delay(10);
   }*/
 
- motor1.drive(1000);
+ motor1.drive(-1000);
  motor2.drive(1000);
  }

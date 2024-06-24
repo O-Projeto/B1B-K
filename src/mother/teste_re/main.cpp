@@ -2,7 +2,7 @@
 #include "config.h"
 #include "refletancia.h"
 #include <Arduino.h>
-#include "mother/IR/controle_juiz.h"
+#include "mother/IR/controle_juiz.hpp"
 
 
 // Initializing motors.  The library will allow you to initialize as many
@@ -47,7 +47,7 @@ void setup() {
 
 void loop (){
   read_ir = controle_sony.read();
-  if (last_ir == TWO && (read_ir == ONE || read_ir == -1))
+  if (last_ir == TWO && (read_ir == -1))
   {
     read_ir = TWO;
   }
@@ -60,6 +60,8 @@ switch (read_ir)
 {
   case ONE:
     andar(0,0);
+    delay(10);
+    last_ir = ONE;
     break;
   case TWO:
     check_border();
@@ -67,6 +69,7 @@ switch (read_ir)
     check_border();
     re();
     andar(vel_motor_1,vel_motor_2);
+    last_ir = TWO;
     break;
   default:
   break;
