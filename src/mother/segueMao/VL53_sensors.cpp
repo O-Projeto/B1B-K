@@ -58,7 +58,7 @@ int VL53_sensors::PesosDistancias()
 { 
   int Media[number_sensor] = {25,5,-5,-25}, distanciaP=0, distanciaN=0;
   for (int i=0; i<=number_sensor; i++){
-    if (dist[i]>220){dist[i]=0;}
+    if (dist[i]>300){dist[i]=0;}
     Media[i] = dist[i]*Media[i];
   }
     distanciaP=(Media[0]+Media[1])/30;

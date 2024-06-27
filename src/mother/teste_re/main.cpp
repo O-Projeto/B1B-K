@@ -17,7 +17,6 @@ float read_sensor_esq = 0;
 bool border_dir, border_esq; 
 int last_line_detected = 0;
 int line_detected = 0;
-int backwards = 0;
 float start_time = 0;
 float current_time = 0;
 float tempoRe=0;
@@ -37,7 +36,7 @@ controle_juiz controle_sony(34);
 void check_border();
 void attack();
 void re();
-void andar(int mot1, int mot2);
+void drive(int mot1, int mot2);
 
 void setup() {
   Serial.begin(115200);
@@ -59,7 +58,7 @@ void loop (){
 switch (read_ir)
 {
   case ONE:
-    andar(0,0);
+    drive(0,0);
     delay(10);
     last_ir = ONE;
     break;
@@ -68,7 +67,7 @@ switch (read_ir)
     attack();
     check_border();
     re();
-    andar(vel_motor_1,vel_motor_2);
+    drive(vel_motor_1,vel_motor_2);
     last_ir = TWO;
     break;
   default:
@@ -77,7 +76,7 @@ switch (read_ir)
    read_ir = controle_sony.read();
 }
 
-void andar(int mot1, int mot2){
+void drive(int mot1, int mot2){
     motor1.drive(mot1);
     motor2.drive(mot2);
 }

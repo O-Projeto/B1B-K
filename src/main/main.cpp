@@ -207,7 +207,7 @@ void check_border()
     if (current_time - start_time < 600)
     {
       left_vel = 0;
-      right_vel = 900;
+      right_vel = -900;
       backwards = 1;
     }
     else
