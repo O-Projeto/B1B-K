@@ -57,8 +57,7 @@ void VL53_sensors::printDistancesSensor(int sensor_num) {
 /*testa todos as distancias, filtrando as que tão muito longe 
   multiplica as distancias pelos pesos 
   soma a distancia positiva e faz a media (msm coisa ngativa)
-  testa se os dois tao zrados e se nao soma e retorna o valore
-  se o valor for maior que 0 ele ta pra direita e se for menor pra squerda*/
+  testa se os dois tao zrados e se nao soma e retorna o valores*/
 int VL53_sensors::PesosDistancias()
 { 
   int Media[number_sensor] = {25,5,-5,-25}, distanciaP=0, distanciaN=0;

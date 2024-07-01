@@ -56,46 +56,42 @@ void setup()
 void loop() {
   read_ir = controle_sony.read();
   if (last_ir == TWO && (read_ir == ONE || read_ir == -1)){ read_ir = TWO;}
- // if (read_ir == ONE && last_ir == ONE){last_ir = TREE; read_ir = -1;}
+
 
   read_sensor_dir = qr_dir.read();
   read_sensor_esq = qr_esq.read();
   border_dir = qr_dir.detect_border();
   border_esq = qr_esq.detect_border();
-  sensores.distanceRead();
 
-  switch (read_ir)
-  {
+  switch (read_ir){
   case ONE:
-    Serial.println(read_ir);
-    LED.latch(200, VERDE);
-    start_time = millis();
-    last_ir = ONE;
-    break;
+      last_ir = ONE;
+      LED.latch(200, VERDE);
+      start_time = millis();
+      break;
 
   case TWO:
+    sensores.distanceRead();
     check_border();
-    re();  
     search();
+    check_border();
+    re();
+    sensores.printDistances();
     //totalFrente();
     drive(vel_motor_1,vel_motor_2);
     last_ir = TWO;
     break;
   case TREE:
-    Serial.println(read_ir);
     drive(0,0);
     delay(10);
     LED.set(VERMELHO);
     tempoRe = 0;
     flagRe = 0;
     last_ir = TREE;
-    start_time = millis();
     break;
 
   default:
-    start_time = millis();
-    LED.set(0);
-    break;
+  break;
 }
    read_ir = controle_sony.read();
 
@@ -107,26 +103,26 @@ void drive(int mot1, int mot2){
 }
 void search()
 {
-  if (!flagRe){
   mediaCentro = sensores.PesosDistancias();
-  if (mediaCentro == -1){
-    if (lastMediaCentro < -70){
+  Serial.println(mediaCentro);
+  if (mediaCentro == -1 && !flagRe){
+    if (lastMediaCentro < -60){
       vel_motor_1 = 200;
       vel_motor_2 = -200;
-    } else if (lastMediaCentro > 70){
+    } else if (lastMediaCentro > 60){
       vel_motor_1 = -200;
       vel_motor_2 = 200;
     } else{
       vel_motor_1 = 200;
       vel_motor_2 = -200;
     }
-  } else{
+  } else if (!flagRe){
     if (mediaCentro < -60){
       vel_motor_1 = 500;
       vel_motor_2 = -200;
     } else if (mediaCentro > 60){
-      vel_motor_1 = -200;
-      vel_motor_2 = 500;
+      vel_motor_1 = 0;
+      vel_motor_2 = 0;
     } else {
       vel_motor_1 = 500;
       vel_motor_2 = 500;
@@ -134,40 +130,21 @@ void search()
     lastMediaCentro = mediaCentro;
   }
 }
-}
-// se ela ta grudada em algo ela usa força total
+
 void totalFrente()
 {
-  if ((sensores.dist[1] <= 60 && sensores.dist[2]<=60) && !flagRe)
+  if (sensores.dist[1] <= 60 && sensores.dist[2]<=60)
   {
-    vel_motor_1 = 800;
-    vel_motor_2 = 800;
+    vel_motor_1 = 700;
+    vel_motor_2 = 700;
   }
 }
 
-//se o tempo atual menos o tempo de inicio for menor que o tempo de ré então ele da ré 
 void re(){
     current_time = millis();
-    if(current_time - start_time < tempoRe){
-      if (border_dir && border_esq){
-        tempoRe = 200;
-        vel_motor_1 = -600;
-        vel_motor_2 = -600;
-        flagRe = 1;
-      }else if (border_dir){
-        tempoRe = 200;
-        vel_motor_1 = -600;
-        vel_motor_2 = -300;
-        flagRe = 1;
-      }else if (border_esq){
-        tempoRe = 200;
-        vel_motor_1 = -600;
-        vel_motor_2 = -300;
-        flagRe = 1;
-      }else{
-        vel_motor_1 = -600;
-        vel_motor_2 = -600;
-      }
+    if(current_time - start_time < tempoRe && flagRe){
+        vel_motor_1 = -500;
+        vel_motor_2 = -500;
     } else{        
         tempoRe = 0;
         flagRe = 0;

@@ -84,8 +84,25 @@ void drive(int mot1, int mot2){
 void re(){
     current_time = millis();
     if(current_time - start_time < tempoRe && flagRe){
+      if (border_dir && border_esq){
+        tempoRe = 600;
         vel_motor_1 = -500;
-        vel_motor_2 = -560;
+        vel_motor_2 = -500;
+        flagRe = 1;
+      }else if (border_dir){
+        tempoRe = 600;
+        vel_motor_1 = -500;
+        vel_motor_2 = -200;
+        flagRe = 1;
+      }else if (border_esq){
+        tempoRe = 600;
+        vel_motor_1 = -200;
+        vel_motor_2 = -500;
+        flagRe = 1;
+      }else{
+        vel_motor_1 = -500;
+        vel_motor_2 = -500;
+      }
     } else{        
         tempoRe = 0;
         flagRe = 0;
@@ -99,13 +116,15 @@ void check_border()
   }
     last_line_detected = line_detected;
   if (border_dir || border_esq){
-    tempoRe = 800;
+    tempoRe = 300;
     line_detected = 1;
     flagRe = 1;
   }
   else {line_detected=0;}
   }
 void attack(){
+    if (!flagRe){
         vel_motor_1 = 500;
-        vel_motor_2 = 560;
+        vel_motor_2 = 500;
+    }
 }

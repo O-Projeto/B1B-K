@@ -1,12 +1,13 @@
 //PWM control for the motors 
 #include <Adafruit_NeoPixel.h>
-#pragma once
+#include "config.h"
 
 
-#define NUMPIXELS 3
-#define RGB_PIN 23
+#define NUMPIXELS 7
+#define LED_PIN 23
 
-Adafruit_NeoPixel pixels(NUMPIXELS, RGB_PIN, NEO_GRB + NEO_KHZ800);
+
+Adafruit_NeoPixel pixels(NUMPIXELS, LED_PIN, NEO_GRB + NEO_KHZ800);
 
 class led_rgb 
 {
@@ -18,11 +19,13 @@ private:
 
   
 public:
-    bool flag = 0;
+
     void init();
     void blink(const long time, int color);
 
     void latch(const long time, int color);
+
+    void set(int color);
 };
 
 
@@ -68,7 +71,7 @@ void led_rgb ::latch(const long time, int color){
 
   unsigned long currentMillis = millis();
 
-  if (currentMillis - start_time <= time && !flag) {
+  if (currentMillis - start_time <= time) {
     // save the last time you blinked the LED
     previousMillis = currentMillis;
 
@@ -76,12 +79,18 @@ void led_rgb ::latch(const long time, int color){
    
     pixels.fill(color);
     pixels.show();
+    
    
   }else{
         start_time = millis();
         pixels.fill(0x000000);
         pixels.show();
-        flag = 1; 
   }
+   
+}
 
+void led_rgb::set(int color){
+
+    pixels.fill(color);
+    pixels.show();
 }
