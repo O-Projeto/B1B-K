@@ -12,31 +12,31 @@
             "type": "platformio-debug",
             "request": "launch",
             "name": "PIO Debug",
-            "executable": "c:/Users/pastu/OneDrive/Documentos/b1bk/B1B-K/.pio/build/seguemao/firmware.elf",
-            "projectEnvName": "seguemao",
-            "toolchainBinDir": "C:/Users/pastu/.platformio/packages/toolchain-xtensa-esp32/bin",
+            "executable": "c:/Users/Daeln/Desktop/B1bk/B1B-K/.pio/build/enemy_tracker/firmware.elf",
+            "projectEnvName": "enemy_tracker",
+            "toolchainBinDir": "C:/Users/Daeln/.platformio/packages/toolchain-xtensa-esp32/bin",
             "internalConsoleOptions": "openOnSessionStart",
             "preLaunchTask": {
                 "type": "PlatformIO",
-                "task": "Pre-Debug (seguemao)"
+                "task": "Pre-Debug (enemy_tracker)"
             }
         },
         {
             "type": "platformio-debug",
             "request": "launch",
             "name": "PIO Debug (skip Pre-Debug)",
-            "executable": "c:/Users/pastu/OneDrive/Documentos/b1bk/B1B-K/.pio/build/seguemao/firmware.elf",
-            "projectEnvName": "seguemao",
-            "toolchainBinDir": "C:/Users/pastu/.platformio/packages/toolchain-xtensa-esp32/bin",
+            "executable": "c:/Users/Daeln/Desktop/B1bk/B1B-K/.pio/build/enemy_tracker/firmware.elf",
+            "projectEnvName": "enemy_tracker",
+            "toolchainBinDir": "C:/Users/Daeln/.platformio/packages/toolchain-xtensa-esp32/bin",
             "internalConsoleOptions": "openOnSessionStart"
         },
         {
             "type": "platformio-debug",
             "request": "launch",
             "name": "PIO Debug (without uploading)",
-            "executable": "c:/Users/pastu/OneDrive/Documentos/b1bk/B1B-K/.pio/build/seguemao/firmware.elf",
-            "projectEnvName": "seguemao",
-            "toolchainBinDir": "C:/Users/pastu/.platformio/packages/toolchain-xtensa-esp32/bin",
+            "executable": "c:/Users/Daeln/Desktop/B1bk/B1B-K/.pio/build/enemy_tracker/firmware.elf",
+            "projectEnvName": "enemy_tracker",
+            "toolchainBinDir": "C:/Users/Daeln/.platformio/packages/toolchain-xtensa-esp32/bin",
             "internalConsoleOptions": "openOnSessionStart",
             "loadMode": "manual"
         }
