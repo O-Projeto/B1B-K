@@ -7,7 +7,8 @@
 #define BIN2 27
 #define PWMA 32
 #define PWMB 13
-#define STBY 26
+//#define STBY 26
+const int STBY=26;
 
 #define ONE 0
 #define TWO 1

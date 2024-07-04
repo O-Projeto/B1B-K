@@ -65,8 +65,9 @@ void loop() {
 
   switch (read_ir){
   case ONE:
+      Serial.println(read_ir);
       last_ir = ONE;
-      LED.latch(200, VERDE);
+      LED.fill(VERDE);
       start_time = millis();
       break;
 
@@ -82,6 +83,7 @@ void loop() {
     last_ir = TWO;
     break;
   case TREE:
+    Serial.println(read_ir);
     drive(0,0);
     delay(10);
     LED.set(VERMELHO);
@@ -121,8 +123,8 @@ void search()
       vel_motor_1 = 500;
       vel_motor_2 = -200;
     } else if (mediaCentro > 60){
-      vel_motor_1 = 0;
-      vel_motor_2 = 0;
+      vel_motor_1 = -200;
+      vel_motor_2 = 500;
     } else {
       vel_motor_1 = 500;
       vel_motor_2 = 500;

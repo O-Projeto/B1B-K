@@ -52,6 +52,24 @@ void setup()
   LED.set(AZUL);
   delay(1000);
   LED.set(0);
+  xTaskCreatePinnedToCore(
+    VL53_sensors::distanceRead,
+    "Leitura distancias",
+    10000,
+    &sensores,
+    1,
+    NULL,
+    1
+  );
+  xTaskCreatePinnedToCore(
+    search,
+    "Procura",
+    10000,
+    NULL,
+    2,
+    NULL,
+    1
+  );
 }
 void loop() {
   read_ir = controle_sony.read();
@@ -62,27 +80,27 @@ void loop() {
   read_sensor_esq = qr_esq.read();
   border_dir = qr_dir.detect_border();
   border_esq = qr_esq.detect_border();
-  sensores.distanceRead();
 
-  switch (read_ir)
-  {
+
+  switch (read_ir) {
   case ONE:
-    Serial.println(read_ir);
-    LED.latch(200, VERDE);
+   // Serial.println(read_ir);
+    LED.fill(VERDE);
     start_time = millis();
     last_ir = ONE;
     break;
 
   case TWO:
+    // sensores.distanceRead();
+    //search();
+    totalFrente();
     check_border();
     re();  
-    search();
-    //totalFrente();
     drive(vel_motor_1,vel_motor_2);
     last_ir = TWO;
     break;
   case TREE:
-    Serial.println(read_ir);
+    //Serial.println(read_ir);
     drive(0,0);
     delay(10);
     LED.set(VERMELHO);
@@ -138,29 +156,29 @@ void search()
 // se ela ta grudada em algo ela usa força total
 void totalFrente()
 {
-  if ((sensores.dist[1] <= 60 && sensores.dist[2]<=60) && !flagRe)
-  {
-    vel_motor_1 = 800;
-    vel_motor_2 = 800;
+ // if ((sensores.dist[1] <= 60 && sensores.dist[2]<=60) && !flagRe) {
+    if (!flagRe){
+    vel_motor_1 = 500;
+    vel_motor_2 = 500;
   }
 }
 
 //se o tempo atual menos o tempo de inicio for menor que o tempo de ré então ele da ré 
 void re(){
     current_time = millis();
-    if(current_time - start_time < tempoRe){
+    if(current_time - start_time < tempoRe && flagRe){
       if (border_dir && border_esq){
-        tempoRe = 200;
+        tempoRe = 600;
         vel_motor_1 = -600;
         vel_motor_2 = -600;
         flagRe = 1;
       }else if (border_dir){
-        tempoRe = 200;
+        tempoRe = 600;
         vel_motor_1 = -600;
         vel_motor_2 = -300;
         flagRe = 1;
       }else if (border_esq){
-        tempoRe = 200;
+        tempoRe = 600;
         vel_motor_1 = -600;
         vel_motor_2 = -300;
         flagRe = 1;
@@ -168,6 +186,7 @@ void re(){
         vel_motor_1 = -600;
         vel_motor_2 = -600;
       }
+    drive(vel_motor_1,vel_motor_2);
     } else{        
         tempoRe = 0;
         flagRe = 0;
@@ -181,7 +200,7 @@ void check_border()
   }
     last_line_detected = line_detected;
   if (border_dir || border_esq){
-    tempoRe = 200;
+    tempoRe = 300;
     line_detected = 1;
     flagRe = 1;
   }
