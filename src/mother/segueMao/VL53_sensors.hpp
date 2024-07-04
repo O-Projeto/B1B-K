@@ -10,7 +10,7 @@
 #define SDIST_ESQ 19
 #define NUM_SENSORS 4
 
-class VL53_sensors
+class VL53_sensorsnumber_sensor
 {
 private:
     /* data */

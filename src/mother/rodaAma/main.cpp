@@ -100,7 +100,7 @@ void loop() {
 void drive(int mot1, int mot2){
     motor1.drive(mot1);
     motor2.drive(mot2);
-}
+} 
 void search()
 {
   mediaCentro = sensores.PesosDistancias();

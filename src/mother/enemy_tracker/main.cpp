@@ -8,6 +8,14 @@
 #include "refletancia.h"
 #include "led_rgb.h"
 #include "kinematics.h"
+#include "controller.h"
+
+// Descomente esta linha para ativar a depuração
+// #define DEBUG_PID  
+// serial print dos vls para ver o quão rápido eles reagem
+#define DEBUG_VL
+
+Controller controle_angular(1,0,0);
 
 VL53_sensors sensores;
 controle_juiz controle_sony(34);
@@ -36,7 +44,9 @@ int last_ir = 0;
 int vel_motor_1;
 int vel_motor_2;
 
-int mediaCentro, lastMediaCentro;
+int mediaCentro = 0;
+//int lastMediaCentro = 0;
+int angular = 0;
 
 void drive(int mot1, int mot2);
 void search();
@@ -109,13 +119,20 @@ void drive(int mot1, int mot2){
 void search()
 {  // return value from to 200 to -200 -> view b1bk from front left is 200 
   if (!flagRe){
-  mediaCentro = sensores.PesosDistancias();
-  float error = mediaCentro - 0; // setpoint = 0 
-  float KP = 5 ;
-  int angular = error*KP ;
+
+  // caso os sensores consigam 
+  mediaCentro = sensores.PesosDistancias(); 
+  
+  if(mediaCentro != -9999){
+    angular = controle_angular.output(0.0,mediaCentro);
+  }
+
 
   vel_motor_1 = cinematic_left(0,angular);
   vel_motor_2 = cinematic_right(0,angular);
+
+
+#ifdef DEBUG_PID
   Serial.print("enemy_pos: ");
   Serial.print(mediaCentro);
   Serial.print(" angular: ");
@@ -125,7 +142,11 @@ void search()
   Serial.print(" Motor_right: ");
   Serial.print(vel_motor_2);
   Serial.println("");
+#endif
 
+#ifdef DEBUG_VL
+  sensores.printDistances();
+#endif
 
   
 }
@@ -181,4 +202,4 @@ void check_border()
     flagRe = 1;
   }
   else {line_detected=0;}
-  }
+}

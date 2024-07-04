@@ -42,7 +42,7 @@ void VL53_sensors::printDistances() {
       
   }
   Serial.println("\t\t");
-  delay(1000);
+  delay(15);
 }
 
 void VL53_sensors::printDistancesSensor(int sensor_num) {
@@ -68,6 +68,6 @@ int VL53_sensors::PesosDistancias()
   }
     distanciaP=(Media[0]+Media[1])/30;
     distanciaN=(Media[2]+Media[3])/30;
-    if (distanciaP == 0 && distanciaN == 0){return -1;}
+    if (distanciaP == 0 && distanciaN == 0){return -9999;}
     return (distanciaP+distanciaN);
 }

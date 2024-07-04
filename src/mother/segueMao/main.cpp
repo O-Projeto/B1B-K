@@ -43,7 +43,7 @@ void check_border();
 void re();
 void totalFrente();
 
-void setup() 
+void setup()
 {
 	Serial.begin(112500);
 	sensores.sensorsInit();
@@ -55,6 +55,7 @@ void setup()
 }
 void loop() {
   read_ir = controle_sony.read();
+  
   if (last_ir == TWO && (read_ir == ONE || read_ir == -1)){ read_ir = TWO;}
  // if (read_ir == ONE && last_ir == ONE){last_ir = TREE; read_ir = -1;}
 
@@ -187,3 +188,5 @@ void check_border()
   }
   else {line_detected=0;}
   }
+
+//  frente tras motor, angular 
