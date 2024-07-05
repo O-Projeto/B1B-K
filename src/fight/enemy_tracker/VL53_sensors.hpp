@@ -28,7 +28,7 @@ public:
     #endif
 
     #ifdef B1B_K_1_Led
-        int offset[NUM_SENSORS] = {0, 0, 0, 0}; // 
+        int offset[NUM_SENSORS] = {0, -20, 0, 0}; // 
     #endif
 
 

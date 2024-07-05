@@ -13,6 +13,8 @@ Funciona ré
 para integrar dps 
 snake_case, primeira letra maiuscula- nome da pasta de origem
 
+O segue mão lê os vls e funciona, só tirar os delays
+
 Devices-vls
 Devices-rgb
 Devices-motor
