@@ -1,5 +1,4 @@
-#ifndef ESP32_TB6612_hpp
-#define ESP32_TB6612_hpp
+#pragma once 
 
 
 // Library to control the TB6612 H bridge it has 3 control pins, A,B and PWM. 
@@ -23,13 +22,14 @@
 
 class Motor 
 {
+  private:
+    int IN1, IN2, PWM, STBY, _channel, _resolution;
+    
   public:
+
     Motor(int IN1pin, int IN2pin, int PWMpin, int STBYpin, int channel, int resolution);
 
     void drive(int speed);
 
-  private:
-    int IN1, IN2, PWM, STBY, _channel, _resolution;
+  
 };
-
-#endif

@@ -2,6 +2,9 @@
 #include "IRremote.h"
 #pragma once
 
+#define INIT 1
+int last_button_read;
+
 class controle_juiz
 {
 private:
@@ -28,13 +31,15 @@ void controle_juiz::init(){
 }
 
 int controle_juiz::read(){
-    // se o botão foi apertado retorna o o que foi apertado
-    // se não, retorna -1 (padrão??)
-    if (IrReceiver.decode()) {
-    IrReceiver.resume();
-    button_read = IrReceiver.decodedIRData.command;
+
+    if (IrReceiver.decode()){
+        IrReceiver.resume();
+        button_read = IrReceiver.decodedIRData.command;
+        if (last_button_read == 0){
+            button_read = -1;
+        }
     }
 
+    last_button_read = button_read;
     return button_read;
-
 }

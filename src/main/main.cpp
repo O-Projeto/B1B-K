@@ -95,7 +95,7 @@ void loop() {
       //leftMotor.drive(255);
       //rightMotor.drive(-255);
       last_ir = ONE;
-      LED.latch(200, VERDE);
+      LED.fill(VERDE);
       start_time = millis();
       break;
     

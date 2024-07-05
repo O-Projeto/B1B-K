@@ -79,7 +79,7 @@ void loop() {
   {
   case ONE:
     Serial.println(read_ir);
-    LED.latch(200, VERDE);
+    LED.fill(VERDE);
     start_time = millis();
     last_ir = ONE;
     break;

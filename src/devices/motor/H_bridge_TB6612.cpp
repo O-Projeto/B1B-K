@@ -25,24 +25,26 @@ Motor::Motor(int IN1pin, int IN2pin, int PWMpin, int STBYpin, int channel, int r
 }
 
 void Motor::drive(int speed) {
-
+ 
+ // filtro de velocidade 
   if(speed > 1000)
       speed = 1000;
 
   if(speed < -1000)
       speed = -1000; 
 
+
   speed = map(speed,-1000,1000,-1023,1023);
 
-  if(speed > 0) {
+  if(speed > 0) { // frente
     digitalWrite(IN1, HIGH);
     digitalWrite(IN2, LOW);
   }
-  else if(speed < 0) {
+  else if(speed < 0) { // tras
     digitalWrite(IN1, LOW);
     digitalWrite(IN2, HIGH);
   }
-  else {
+  else { // parar
     digitalWrite(IN1, LOW);
     digitalWrite(IN2, LOW);
   }

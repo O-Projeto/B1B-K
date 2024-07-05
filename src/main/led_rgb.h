@@ -3,7 +3,7 @@
 #include "config.h"
 
 
-#define NUMPIXELS 7
+#define NUMPIXELS 3
 #define LED_PIN 23
 
 
@@ -19,13 +19,14 @@ private:
 
   
 public:
-
     void init();
     void blink(const long time, int color);
 
     void latch(const long time, int color);
 
     void set(int color);
+    
+    void fill(int color);
 };
 
 
@@ -93,4 +94,17 @@ void led_rgb::set(int color){
 
     pixels.fill(color);
     pixels.show();
+}
+
+void led_rgb::fill(int color){
+     if(!ledState){
+        ledState = HIGH;
+         pixels.fill(color);
+         pixels.show();
+    }else{
+        ledState = LOW;
+        pixels.fill(0x000000);
+        pixels.show();
+    }
+
 }
