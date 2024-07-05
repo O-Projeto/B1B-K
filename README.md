@@ -3,12 +3,23 @@
 #todo - 
 Deixar as libs em devices!!!
 
-NA fight deixar o enemy tracker
-Funciona controle
-Funciona ré
-para integrar dps
-e diferentes códigos de luta
-snake_case
+NA fight deixar o enemy tracker [:s]
+e diferentes códigos de luta [:s]
+Funciona controle [:s] 
+Leitura vl no segundo core
+Trashhold das duas b1b-ks  
+PID!!!!
+Funciona ré  
+para integrar dps 
+snake_case, primeira letra maiuscula- nome da pasta de origem
+
+Devices-vls
+Devices-rgb
+Devices-motor
+Devices-refletancia
+
+Fight-enemy_tracker
+Main-main
 
 documentar no começo do código que é importante verificar qual das b1b-ks por conta dos sensores
 
