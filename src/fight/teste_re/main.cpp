@@ -2,7 +2,7 @@
 #include "config.h"
 #include "refletancia.h"
 #include <Arduino.h>
-#include "mother/IR/controle_juiz.hpp"
+#include "fight/IR/controle_juiz.hpp"
 
 
 // Initializing motors.  The library will allow you to initialize as many

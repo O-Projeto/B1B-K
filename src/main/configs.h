@@ -16,7 +16,7 @@
 #define qrDir 39
 #define qrEsq 36
 
-// Definição de comandos do controle (Fazer testes no examples/IR pra incrementar mais botões e ajusta-los)
+// Definição de comandos do controle (Fazer testes no devices/IR pra incrementar mais botões e ajusta-los)
 #define ONE 0
 #define TWO 1
 #define TREE 2

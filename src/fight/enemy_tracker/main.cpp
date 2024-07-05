@@ -85,10 +85,13 @@ void loop() {
     break;
 
   case TWO:
-    // check_border();
-    // re();  
-    search();
-    //totalFrente();
+    // // check_border();
+    // // re();  
+    // search();
+    // //totalFrente();
+ 
+    vel_motor_1 = 500;
+    vel_motor_2 = 500;
     drive(vel_motor_1,vel_motor_2);
     last_ir = TWO;
     break;

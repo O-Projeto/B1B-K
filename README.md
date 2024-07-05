@@ -1,5 +1,20 @@
 # B1B-K
 
+#todo - 
+Deixar as libs em devices!!!
+
+NA fight deixar o enemy tracker
+Funciona controle
+Funciona ré
+para integrar dps
+e diferentes códigos de luta
+snake_case
+
+documentar no começo do código que é importante verificar qual das b1b-ks por conta dos sensores
+
+Validar eletrônica dos dois, deixar motores iguais
+
+
 README para saber como ler a prog da B1B-K.
 ## Bibliotecas
 
