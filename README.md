@@ -8,8 +8,8 @@ e diferentes códigos de luta [:s]
 Funciona controle [:s] 
 Leitura vl no segundo core
 Trashhold das duas b1b-ks  
-PID!!!!
 Funciona ré  
+PID!!!!
 para integrar dps 
 snake_case, primeira letra maiuscula- nome da pasta de origem
 

@@ -99,13 +99,16 @@ void loop() {
       break;
 
   case TWO:
-    sensores.distanceRead();
+    // sensores.distanceRead();
+    updateCalculatedDistance();
     check_border();
     search();
     check_border();
     re();
-    sensores.printDistances();
+    // sensores.printDistances();
     //totalFrente();
+    Serial.print(vel_motor_1,vel_motor_2);
+
     drive(vel_motor_1,vel_motor_2);
     last_ir = TWO;
     break;
@@ -133,12 +136,13 @@ void search()
 {
 
     // Atualiza a variável global com a distância calculada
-    updateCalculatedDistance();
+    
 
     // Imprime a distância calculada armazenada na variável global
-    printCalculatedDistance();
+    // printCalculatedDistance();
 
-  mediaCentro = sensores.PesosDistancias();
+  // mediaCentro = sensores.PesosDistancias();
+  mediaCentro = calculatedDistance;
   Serial.println(mediaCentro);
   if (mediaCentro == -1 && !flagRe){
     if (lastMediaCentro < -60){
@@ -178,13 +182,31 @@ void totalFrente()
 void re(){
     current_time = millis();
     if(current_time - start_time < tempoRe && flagRe){
+      if (border_dir && border_esq){
+        tempoRe = 600;
         vel_motor_1 = -500;
         vel_motor_2 = -500;
+        flagRe = 1;
+      }else if (border_dir){
+        tempoRe = 600;
+        vel_motor_1 = -500;
+        vel_motor_2 = -200;
+        flagRe = 1;
+      }else if (border_esq){
+        tempoRe = 600;
+        vel_motor_1 = -200;
+        vel_motor_2 = -500;
+        flagRe = 1;
+      }else{
+        vel_motor_1 = -500;
+        vel_motor_2 = -500;
+      }
     } else{        
         tempoRe = 0;
         flagRe = 0;
     }
 }
+
 void check_border()
 {
   if (line_detected != last_line_detected)
