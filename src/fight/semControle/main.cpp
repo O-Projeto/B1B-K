@@ -73,9 +73,9 @@ void setup()
   xTaskCreatePinnedToCore(
       readSensorsTask,  // Função da tarefa
       "ReadSensorsTask",  // Nome da tarefa
-      2048,  // Tamanho da pilha
+      4096,  // Tamanho da pilha
       NULL,  // Parâmetro da tarefa
-      1,  // Prioridade da tarefa
+      2,  // Prioridade da tarefa
       NULL,  // Handle da tarefa
       0  // Core
   );
@@ -88,36 +88,23 @@ void loop() {
   border_dir = qr_dir.detect_border();
   border_esq = qr_esq.detect_border();
 
-    Serial.print("ini: ");
-    Serial.println(vel_motor_1);
-    Serial.println(vel_motor_2);
-    Serial.println();
+
     check_border();
-    Serial.print("check01: ");
-    Serial.println(vel_motor_1);
-    Serial.println(vel_motor_2);
-    Serial.println();
+
+
     updateCalculatedDistance();
-    Serial.print("calcDist: ");
-    Serial.println(vel_motor_1);
-    Serial.println(vel_motor_2);
-    Serial.println();
+
     search();
-    Serial.print("search: ");
-    Serial.println(vel_motor_1);
-    Serial.println(vel_motor_2);
-    Serial.println();
+
     check_border();
     re();
-    Serial.print("re: ");
-    Serial.println(vel_motor_1);
-    Serial.println(vel_motor_2);
-    Serial.println();
-    delay(5000);
+   Serial.print("vel: ");
+   Serial.println(vel_motor_1);
+   Serial.println(vel_motor_2);
+
+    vTaskDelay(pdMS_TO_TICKS(500));
     // sensores.printDistances();
     //totalFrente();
-   //Serial.println(vel_motor_1);
-   // Serial.println(vel_motor_2);
 
     //drive(vel_motor_1,vel_motor_2);
 
@@ -179,13 +166,6 @@ void re(){
       if (border_dir && border_esq){
         Serial.println();
         Serial.println("zzz");
-        Serial.println();
-        Serial.println();
-        Serial.println();
-        Serial.println();
-        Serial.println();
-        Serial.println();
-        Serial.println();
         tempoRe = 600;
         vel_motor_1 = -600;
         vel_motor_2 = -600;
@@ -208,6 +188,8 @@ void re(){
     } else{        
         tempoRe = 0;
         flagRe = 0;
+        Serial.println("flagRe: ");
+        Serial.println(flagRe);
     }
 }
 
@@ -218,12 +200,16 @@ void check_border()
     start_time = millis();
   }
     last_line_detected = line_detected;
+  Serial.print("bordas; ");
+  Serial.println(border_dir);
+  Serial.println(border_esq);
   if (border_dir || border_esq){
     tempoRe = 200;
     line_detected = 1;
     flagRe = 1;
   }
   else {line_detected=0;}
+
   }
 
 void readSensorsTask(void *pvParameters) {

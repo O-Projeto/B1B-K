@@ -107,7 +107,7 @@ void loop() {
     re();
     // sensores.printDistances();
     //totalFrente();
-    Serial.print(vel_motor_1,vel_motor_2);
+    //Serial.print(vel_motor_1,vel_motor_2);
 
     drive(vel_motor_1,vel_motor_2);
     last_ir = TWO;
@@ -143,25 +143,25 @@ void search()
 
   // mediaCentro = sensores.PesosDistancias();
   mediaCentro = calculatedDistance;
-  Serial.println(mediaCentro);
+ // Serial.println(mediaCentro);
   if (mediaCentro == -1 && !flagRe){
     if (lastMediaCentro < -60){
-      vel_motor_1 = 200;
-      vel_motor_2 = -200;
-    } else if (lastMediaCentro > 60){
       vel_motor_1 = -200;
       vel_motor_2 = 200;
+    } else if (lastMediaCentro > 60){
+      vel_motor_1 = 200;
+      vel_motor_2 = -200;
     } else{
       vel_motor_1 = 200;
       vel_motor_2 = -200;
     }
   } else if (!flagRe){
     if (mediaCentro < -60){
+      vel_motor_1 = -200;
+      vel_motor_2 = 500;
+    } else if (mediaCentro > 60){
       vel_motor_1 = 500;
       vel_motor_2 = -200;
-    } else if (mediaCentro > 60){
-      vel_motor_1 = 0;
-      vel_motor_2 = 0;
     } else {
       vel_motor_1 = 500;
       vel_motor_2 = 500;
@@ -183,20 +183,14 @@ void re(){
     current_time = millis();
     if(current_time - start_time < tempoRe && flagRe){
       if (border_dir && border_esq){
-        tempoRe = 600;
         vel_motor_1 = -500;
         vel_motor_2 = -500;
-        flagRe = 1;
       }else if (border_dir){
-        tempoRe = 600;
-        vel_motor_1 = -500;
-        vel_motor_2 = -200;
-        flagRe = 1;
-      }else if (border_esq){
-        tempoRe = 600;
         vel_motor_1 = -200;
         vel_motor_2 = -500;
-        flagRe = 1;
+      }else if (border_esq){
+        vel_motor_1 = -500;
+        vel_motor_2 = -200;
       }else{
         vel_motor_1 = -500;
         vel_motor_2 = -500;
