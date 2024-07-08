@@ -9,6 +9,7 @@
 #define SDIST_C_ESQ 18
 #define SDIST_ESQ 19
 #define NUM_SENSORS 4
+#define B1B_K_3_Led
 
 class VL53_sensors
 {
@@ -18,7 +19,10 @@ public:
     int number_sensor = NUM_SENSORS; // change this value 
     int x_shut_pins[NUM_SENSORS] = {SDIST_DR, SDIST_C_DR, SDIST_C_ESQ, SDIST_ESQ} ; 
     int dist[NUM_SENSORS];
-    int offset[NUM_SENSORS] = {0, 0, 0, 0}; // ???
+        // Com trash holder 
+    #ifdef B1B_K_3_Led
+        int offset[NUM_SENSORS] = {-62, -23, 0, 0}; //             
+    #endif
 
     VL53L0X sensor[NUM_SENSORS];
     

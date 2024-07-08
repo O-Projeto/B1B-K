@@ -1,3 +1,8 @@
+
+
+/*Verificar qual b1bk esta sendo usada para setar os trash-holds*/
+
+
 #include "config.hpp"
 #include "H_bridge_TB6612.hpp"
 //#include <BluetoothSerial.h>
@@ -44,17 +49,31 @@ int vel_motor_2;
 
 int mediaCentro, lastMediaCentro;
 
+int strategyDone=0;
+int strategyStart=0;
+float start_timeStrategy = 0;
+int strategyTime = 0;
+
 void drive(int mot1, int mot2);
 void search();
 void check_border();
 void re();
 void totalFrente();
+void meiaLua();
+void strategy_selector();
 
 // Declaração das funções
 void readSensorsTask(void *pvParameters);
 void updateCalculatedDistance();
 void printCalculatedDistance();
 int calculateDistance(int distances[]);
+
+enum {
+  S0, 
+  S1,
+  S2, 
+};
+int strategy = S0;
 
 void setup() 
 {
@@ -100,15 +119,14 @@ void loop() {
 
   case TWO:
     // sensores.distanceRead();
+    strategy_selector();
+    if (strategyDone){
     updateCalculatedDistance();
-    check_border();
     search();
+    totalFrente();
+    }
     check_border();
     re();
-    // sensores.printDistances();
-    //totalFrente();
-    //Serial.print(vel_motor_1,vel_motor_2);
-
     drive(vel_motor_1,vel_motor_2);
     last_ir = TWO;
     break;
@@ -119,8 +137,18 @@ void loop() {
     tempoRe = 0;
     flagRe = 0;
     last_ir = TREE;
+    strategyStart = 0;
+    strategyDone=0;
     break;
-
+  case FOUR:
+    strategy = S0;
+    last_ir = FOUR;
+  break;
+  case FIVE:
+    strategy = S1;
+    last_ir = FIVE;
+    LED.fill(MAGENTA);
+  break;
   default:
   break;
 }
@@ -144,7 +172,7 @@ void search()
   // mediaCentro = sensores.PesosDistancias();
   mediaCentro = calculatedDistance;
  // Serial.println(mediaCentro);
-  if (mediaCentro == -1 && !flagRe){
+  if (mediaCentro == -9999 && !flagRe){
     if (lastMediaCentro < -60){
       vel_motor_1 = -200;
       vel_motor_2 = 200;
@@ -157,11 +185,11 @@ void search()
     }
   } else if (!flagRe){
     if (mediaCentro < -60){
-      vel_motor_1 = -200;
-      vel_motor_2 = 500;
+      vel_motor_1 = 200;
+      vel_motor_2 = 400;
     } else if (mediaCentro > 60){
-      vel_motor_1 = 500;
-      vel_motor_2 = -200;
+      vel_motor_1 = 400;
+      vel_motor_2 = 200;
     } else {
       vel_motor_1 = 500;
       vel_motor_2 = 500;
@@ -209,7 +237,7 @@ void check_border()
   }
     last_line_detected = line_detected;
   if (border_dir || border_esq){
-    tempoRe = 200;
+    tempoRe = 400;
     line_detected = 1;
     flagRe = 1;
   }
@@ -253,13 +281,44 @@ int calculateDistance(int distances[]) {
 
 	 int Media[NUM_SENSORS] = {25,5,-5,-25}, distanciaP=0, distanciaN=0;
   for (int i=0; i<=NUM_SENSORS; i++){
-    if (distances[i]>300){distances[i]=0;}
+    if (distances[i]>700){distances[i]=0;}
     Media[i] = distances[i]*Media[i];
   }
     distanciaP=(Media[0]+Media[1])/30;
     distanciaN=(Media[2]+Media[3])/30;
-    if (distanciaP == 0 && distanciaN == 0){return -1;}
+    if (distanciaP == 0 && distanciaN == 0){return -9999;}
     return (distanciaP+distanciaN);
 
 
+}
+
+void meiaLua()
+{
+  current_time = millis();
+  if (current_time - start_timeStrategy <= strategyTime){
+  vel_motor_1 = 1000;
+  vel_motor_2 = 600;
+  } else {
+  strategyDone = 1;
+  }
+
+}
+
+void strategy_selector()
+{
+  if (!strategyStart){
+      start_timeStrategy = millis();
+      strategyStart = 1;
+      }
+  if (!strategyDone){
+    switch (strategy){
+    case S0:
+      strategyDone = 1;
+      break;   
+    case S1:
+      strategyTime = 1000;
+      meiaLua();
+      break;
+    }
+  }
 }

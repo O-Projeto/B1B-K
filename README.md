@@ -5,10 +5,10 @@ Deixar as libs em devices!!!
 
 NA fight deixar o enemy tracker [:s]
 e diferentes códigos de luta [:s]
-Funciona controle [:s] 
-Leitura vl no segundo core
+Funciona controle [:s] ok
+Leitura vl no segundo core ok
 Trashhold das duas b1b-ks  
-Funciona ré  
+Funciona ré  ok
 PID!!!!
 para integrar dps 
 snake_case, primeira letra maiuscula- nome da pasta de origem
