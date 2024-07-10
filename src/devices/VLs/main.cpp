@@ -2,6 +2,18 @@
 #include <Arduino.h>
 #include <Wire.h>
 
+// Teste Simples
+#define teste_simples
+
+// Teste com freertos
+// #define teste_free
+
+// Treshold acima de 700 para ignorar coisas fora da arena
+// ler muito perto por 2s - Empurrar em 100 a mais por segundo, até parar de ver
+
+
+#ifdef teste_free
+
 VL53_sensors sensores;
 
 // Handle para a fila
@@ -93,20 +105,20 @@ int calculateDistance(int distances[]) {
 
 
 }
+#endif
 
-// #include "VL53_sensors.h"
-// #include <Arduino.h>
-// #include <Wire.h>
 
-// VL53_sensors sensores;
+#ifdef teste_simples
+VL53_sensors sensores;
 
-// void setup() 
-// {
-// 	Serial.begin(112500);
-// 	sensores.sensorsInit();
-// }
-// void loop() 
-// {
-// 	sensores.distanceRead();
-// 	sensores.printDistances();
-// }
+void setup() 
+{
+	Serial.begin(112500);
+	sensores.sensorsInit();
+}
+void loop() 
+{
+	sensores.distanceRead();
+	sensores.printDistances();
+}
+#endif
