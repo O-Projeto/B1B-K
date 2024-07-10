@@ -123,7 +123,7 @@ void loop() {
     if (strategyDone){
     updateCalculatedDistance();
     search();
-    totalFrente();
+    //totalFrente();
     }
     check_border();
     re();

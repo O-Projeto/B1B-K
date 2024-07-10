@@ -85,20 +85,20 @@ void re(){
     current_time = millis();
     if(current_time - start_time < tempoRe && flagRe){
       if (border_dir && border_esq){
-        tempoRe = 600;
-        vel_motor_1 = -500;
-        vel_motor_2 = -500;
+        tempoRe = 150;
+        vel_motor_1 = -700;
+        vel_motor_2 = -700;
       }else if (border_dir){
-        tempoRe = 600;
-        vel_motor_1 = -500;
-        vel_motor_2 = -200;
-      }else if (border_esq){
-        tempoRe = 600;
+        tempoRe = 150;
         vel_motor_1 = -200;
-        vel_motor_2 = -500;
+        vel_motor_2 = -1000;
+      }else if (border_esq){
+        tempoRe = 150;
+        vel_motor_1 = -1000;
+        vel_motor_2 = -200;
       }else{
-        vel_motor_1 = -500;
-        vel_motor_2 = -500;
+        vel_motor_1 = -700;
+        vel_motor_2 = -700;
       }
     } else{        
         tempoRe = 0;
@@ -113,7 +113,7 @@ void check_border()
   }
     last_line_detected = line_detected;
   if (border_dir || border_esq){
-    tempoRe = 300;
+    tempoRe = 200;
     line_detected = 1;
     flagRe = 1;
   }
@@ -121,7 +121,7 @@ void check_border()
   }
 void attack(){
     if (!flagRe){
-        vel_motor_1 = 500;
-        vel_motor_2 = 500;
+        vel_motor_1 = 600;
+        vel_motor_2 = 600;
     }
 }
