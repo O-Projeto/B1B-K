@@ -55,8 +55,8 @@ void VL53_sensors::printDistancesSensor(int sensor_num) {
 
 }
 
-int VL53_sensors::PesosDistancias()
-{ 
+int VL53_sensors::PesosDistancias() {
+   
   int pesos = 10, Media[number_sensor], distancia=0;
   for (int i=0; i<=number_sensor; i++){
     Media[i] = dist[i]*pesos;
