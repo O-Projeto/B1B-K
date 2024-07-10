@@ -12,31 +12,31 @@
             "type": "platformio-debug",
             "request": "launch",
             "name": "PIO Debug",
-            "executable": "c:/Users/pastu/OneDrive/Documentos/b1bk/B1B-K/.pio/build/motherMotor/firmware.elf",
-            "projectEnvName": "motherMotor",
-            "toolchainBinDir": "C:/Users/pastu/.platformio/packages/toolchain-xtensa-esp32/bin",
+            "executable": "/home/carneiro/Documentos/B1B-K/.pio/build/esp32dev/firmware.elf",
+            "projectEnvName": "esp32dev",
+            "toolchainBinDir": "/home/carneiro/.platformio/packages/toolchain-xtensa-esp32/bin",
             "internalConsoleOptions": "openOnSessionStart",
             "preLaunchTask": {
                 "type": "PlatformIO",
-                "task": "Pre-Debug (motherMotor)"
+                "task": "Pre-Debug"
             }
         },
         {
             "type": "platformio-debug",
             "request": "launch",
             "name": "PIO Debug (skip Pre-Debug)",
-            "executable": "c:/Users/pastu/OneDrive/Documentos/b1bk/B1B-K/.pio/build/motherMotor/firmware.elf",
-            "projectEnvName": "motherMotor",
-            "toolchainBinDir": "C:/Users/pastu/.platformio/packages/toolchain-xtensa-esp32/bin",
+            "executable": "/home/carneiro/Documentos/B1B-K/.pio/build/esp32dev/firmware.elf",
+            "projectEnvName": "esp32dev",
+            "toolchainBinDir": "/home/carneiro/.platformio/packages/toolchain-xtensa-esp32/bin",
             "internalConsoleOptions": "openOnSessionStart"
         },
         {
             "type": "platformio-debug",
             "request": "launch",
             "name": "PIO Debug (without uploading)",
-            "executable": "c:/Users/pastu/OneDrive/Documentos/b1bk/B1B-K/.pio/build/motherMotor/firmware.elf",
-            "projectEnvName": "motherMotor",
-            "toolchainBinDir": "C:/Users/pastu/.platformio/packages/toolchain-xtensa-esp32/bin",
+            "executable": "/home/carneiro/Documentos/B1B-K/.pio/build/esp32dev/firmware.elf",
+            "projectEnvName": "esp32dev",
+            "toolchainBinDir": "/home/carneiro/.platformio/packages/toolchain-xtensa-esp32/bin",
             "internalConsoleOptions": "openOnSessionStart",
             "loadMode": "manual"
         }
