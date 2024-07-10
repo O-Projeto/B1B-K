@@ -3,10 +3,10 @@
 #include <Wire.h>
 
 // Teste Simples
-#define teste_simples
+// #define teste_simples
 
 // Teste com freertos
-// #define teste_free
+#define teste_free
 
 // Treshold acima de 700 para ignorar coisas fora da arena
 // ler muito perto por 2s - Empurrar em 100 a mais por segundo, até parar de ver
