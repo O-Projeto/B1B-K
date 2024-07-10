@@ -9,7 +9,12 @@
 #define SDIST_C_ESQ 18
 #define SDIST_ESQ 19
 #define NUM_SENSORS 4
-#define B1B_K_3_Led
+
+///////////////////////////////
+// TRASH HOLDER ///////////////
+//#define B1B_K_1_Led        //
+#define B1B_K_3_Led          //
+///////////////////////////////
 
 class VL53_sensors
 {
@@ -22,6 +27,10 @@ public:
         // Com trash holder 
     #ifdef B1B_K_3_Led
         int offset[NUM_SENSORS] = {-62, -23, 0, 0}; //             
+    #endif
+
+    #ifdef B1B_K_1_Led
+        int offset[NUM_SENSORS] = {0, -31, 0, -20}; // 
     #endif
 
     VL53L0X sensor[NUM_SENSORS];

@@ -2,7 +2,7 @@
 #include "config.h"
 #include "refletancia.h"
 #include <Arduino.h>
-#include "fight/IR/controle_juiz.hpp"
+#include "devices/IR/controle_juiz.hpp"
 
 
 // Initializing motors.  The library will allow you to initialize as many
@@ -88,17 +88,14 @@ void re(){
         tempoRe = 600;
         vel_motor_1 = -500;
         vel_motor_2 = -500;
-        flagRe = 1;
       }else if (border_dir){
         tempoRe = 600;
         vel_motor_1 = -500;
         vel_motor_2 = -200;
-        flagRe = 1;
       }else if (border_esq){
         tempoRe = 600;
         vel_motor_1 = -200;
         vel_motor_2 = -500;
-        flagRe = 1;
       }else{
         vel_motor_1 = -500;
         vel_motor_2 = -500;
