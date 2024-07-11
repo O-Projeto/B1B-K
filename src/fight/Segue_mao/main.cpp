@@ -125,8 +125,8 @@ void loop() {
     search();
     //totalFrente();
     }
-    check_border();
-    re();
+    //check_border();
+    //re();
     drive(vel_motor_1,vel_motor_2);
     last_ir = TWO;
     break;
@@ -191,8 +191,8 @@ void search()
       vel_motor_1 = 400;
       vel_motor_2 = 200;
     } else {
-      vel_motor_1 = 500;
-      vel_motor_2 = 500;
+      vel_motor_1 = 0;
+      vel_motor_2 = 0;
     }
     lastMediaCentro = mediaCentro;
   }

@@ -91,10 +91,10 @@ void re(){
       }else if (border_dir){
         tempoRe = 150;
         vel_motor_1 = -200;
-        vel_motor_2 = -1000;
+        vel_motor_2 = -800;
       }else if (border_esq){
         tempoRe = 150;
-        vel_motor_1 = -1000;
+        vel_motor_1 = -800;
         vel_motor_2 = -200;
       }else{
         vel_motor_1 = -700;
