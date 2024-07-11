@@ -20,8 +20,8 @@ QueueHandle_t distanceQueue;
 
 controle_juiz controle_sony(34);
 
-refletancia qr_dir(qrDir, 2400);
-refletancia qr_esq(qrEsq, 2400);
+refletancia qr_dir(qrDir, 1400);
+refletancia qr_esq(qrEsq, 1400);
 
 led_rgb LED;
 
@@ -47,12 +47,14 @@ int last_ir = 0;
 int vel_motor_1;
 int vel_motor_2;
 
-int mediaCentro, lastMediaCentro;
+int mediaCentro, lastMediaCentro=0;
 
 int strategyDone=0;
 int strategyStart=0;
 float start_timeStrategy = 0;
 int strategyTime = 0;
+int start_timeFrente=0,frenteTime=1000, enemyfront= 0; 
+
 
 void drive(int mot1, int mot2);
 void search();
@@ -61,6 +63,7 @@ void re();
 void totalFrente();
 void meiaLua();
 void strategy_selector();
+void frenteUmPouco();
 
 // Declaração das funções
 void readSensorsTask(void *pvParameters);
@@ -68,12 +71,14 @@ void updateCalculatedDistance();
 void printCalculatedDistance();
 int calculateDistance(int distances[]);
 
+
+
 enum {
   S0, 
   S1,
   S2, 
 };
-int strategy = S0;
+int strategy;
 
 void setup() 
 {
@@ -125,8 +130,8 @@ void loop() {
     search();
     //totalFrente();
     }
-    //check_border();
-    //re();
+    check_border();
+    re();
     drive(vel_motor_1,vel_motor_2);
     last_ir = TWO;
     break;
@@ -139,15 +144,21 @@ void loop() {
     last_ir = TREE;
     strategyStart = 0;
     strategyDone=0;
+    lastMediaCentro = 0;
     break;
   case FOUR:
     strategy = S0;
     last_ir = FOUR;
+    LED.fill(MAGENTA);
   break;
   case FIVE:
     strategy = S1;
     last_ir = FIVE;
     LED.fill(MAGENTA);
+  break;
+  case SIX:
+    strategy = S2;
+    last_ir = S2;
   break;
   default:
   break;
@@ -168,42 +179,38 @@ void search()
 
     // Imprime a distância calculada armazenada na variável global
     // printCalculatedDistance();
-
+if (!flagRe){
   // mediaCentro = sensores.PesosDistancias();
   mediaCentro = calculatedDistance;
  // Serial.println(mediaCentro);
-  if (mediaCentro == -9999 && !flagRe){
+  if (mediaCentro == -9999){
     if (lastMediaCentro < -60){
       vel_motor_1 = -200;
-      vel_motor_2 = 200;
+      vel_motor_2 = 300;
     } else if (lastMediaCentro > 60){
-      vel_motor_1 = 200;
+      vel_motor_1 = 300;
       vel_motor_2 = -200;
     } else{
-      vel_motor_1 = 200;
-      vel_motor_2 = -200;
+      vel_motor_1 = 300;
+      vel_motor_2 = 300;
     }
-  } else if (!flagRe){
-    if (mediaCentro < -60){
+    }else if(mediaCentro < 150 && mediaCentro > 60){ 
+      vel_motor_1 = 600;
+      vel_motor_2 = 200;
+    }else if (mediaCentro > -150 && mediaCentro < -60){
+      vel_motor_1 = 200;
+      vel_motor_2 = 600;
+    }else if (mediaCentro < -150){
       vel_motor_1 = 200;
       vel_motor_2 = 400;
-    } else if (mediaCentro > 60){
+    } else if (mediaCentro > 150){
       vel_motor_1 = 400;
       vel_motor_2 = 200;
     } else {
-      vel_motor_1 = 0;
-      vel_motor_2 = 0;
+      vel_motor_1 = 600;
+      vel_motor_2 = 600;
     }
     lastMediaCentro = mediaCentro;
-  }
-}
-
-void totalFrente()
-{
-  if (sensores.dist[1] <= 60 && sensores.dist[2]<=60)
-  {
-    vel_motor_1 = 700;
-    vel_motor_2 = 700;
   }
 }
 
@@ -211,16 +218,19 @@ void re(){
     current_time = millis();
     if(current_time - start_time < tempoRe && flagRe){
       if (border_dir && border_esq){
-        vel_motor_1 = -500;
-        vel_motor_2 = -500;
+        tempoRe = 200;
+        vel_motor_1 = -700;
+        vel_motor_2 = -700;
       }else if (border_dir){
+        tempoRe = 200;
         vel_motor_1 = -200;
-        vel_motor_2 = -500;
+        vel_motor_2 = -800;
       }else if (border_esq){
-        vel_motor_1 = -500;
+        tempoRe = 200;
+        vel_motor_1 = -800;
         vel_motor_2 = -200;
       }else{
-        vel_motor_1 = -500;
+        vel_motor_1 = 700;
         vel_motor_2 = -500;
       }
     } else{        
@@ -237,7 +247,7 @@ void check_border()
   }
     last_line_detected = line_detected;
   if (border_dir || border_esq){
-    tempoRe = 400;
+    tempoRe = 200;
     line_detected = 1;
     flagRe = 1;
   }
@@ -281,7 +291,7 @@ int calculateDistance(int distances[]) {
 
 	 int Media[NUM_SENSORS] = {25,5,-5,-25}, distanciaP=0, distanciaN=0;
   for (int i=0; i<=NUM_SENSORS; i++){
-    if (distances[i]>700){distances[i]=0;}
+    if (distances[i]>500){distances[i]=0;}
     Media[i] = distances[i]*Media[i];
   }
     distanciaP=(Media[0]+Media[1])/30;
@@ -304,6 +314,37 @@ void meiaLua()
 
 }
 
+void frenteUmPouco()
+{
+  current_time = millis();
+  if (current_time - start_timeStrategy <= strategyTime){
+  vel_motor_1 = 300;
+  vel_motor_2 = 300;
+  } else {
+  strategyDone = 1;
+  }
+
+}
+
+void totalFrente()
+{
+  if (!flagRe){
+    if ((sensores.dist[1] <= 80 && sensores.dist[2]<=80) && !enemyfront){
+
+      start_time = millis ();
+      enemyfront = 1;
+    } else if (!(sensores.dist[1] <= 80 && sensores.dist[2]<=80)){
+      enemyfront = 0;
+    }
+  
+  if (millis() - start_time >= frenteTime){
+  vel_motor_1 = 1000;
+  vel_motor_2 = 1000;
+  } 
+  }
+
+}
+
 void strategy_selector()
 {
   if (!strategyStart){
@@ -313,10 +354,15 @@ void strategy_selector()
   if (!strategyDone){
     switch (strategy){
     case S0:
-      strategyDone = 1;
+      strategyTime = 500;
+      frenteUmPouco();
       break;   
     case S1:
-      strategyTime = 1000;
+      strategyTime = 3000;
+      meiaLua();
+      break;
+      case S2:
+      strategyTime = 60000;
       meiaLua();
       break;
     }

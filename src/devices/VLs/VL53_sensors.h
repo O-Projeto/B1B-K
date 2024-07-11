@@ -10,8 +10,8 @@
 #define NUM_SENSORS 4
 
 
-#define B1B_K_1_Led
-//#define B1B_K_3_Led
+//#define B1B_K_1_Led
+#define B1B_K_3_Led
 
 class VL53_sensors
 {

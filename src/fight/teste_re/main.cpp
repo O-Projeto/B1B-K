@@ -28,8 +28,8 @@ int last_ir = 0;
 int vel_motor_1;
 int vel_motor_2;
 
-refletancia qr_dir(qrDir, 2400);
-refletancia qr_esq(qrEsq, 2400);
+refletancia qr_dir(qrDir, 1800);
+refletancia qr_esq(qrEsq, 1800);
 
 controle_juiz controle_sony(34);
 
@@ -85,20 +85,20 @@ void re(){
     current_time = millis();
     if(current_time - start_time < tempoRe && flagRe){
       if (border_dir && border_esq){
-        tempoRe = 150;
-        vel_motor_1 = -700;
-        vel_motor_2 = -700;
+        tempoRe = 500;
+        vel_motor_1 = -600;
+        vel_motor_2 = -600;
       }else if (border_dir){
-        tempoRe = 150;
+        tempoRe = 500;
         vel_motor_1 = -200;
-        vel_motor_2 = -800;
+        vel_motor_2 = -600;
       }else if (border_esq){
-        tempoRe = 150;
-        vel_motor_1 = -800;
+        tempoRe = 500;
+        vel_motor_1 = -600;
         vel_motor_2 = -200;
       }else{
-        vel_motor_1 = -700;
-        vel_motor_2 = -700;
+        vel_motor_1 = -600;
+        vel_motor_2 = -600;
       }
     } else{        
         tempoRe = 0;
@@ -121,7 +121,7 @@ void check_border()
   }
 void attack(){
     if (!flagRe){
-        vel_motor_1 = 600;
-        vel_motor_2 = 600;
+        vel_motor_1 = 550;
+        vel_motor_2 = 550;
     }
 }
