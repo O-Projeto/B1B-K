@@ -130,7 +130,7 @@ void loop() {
     search();
     printCalculatedDistance();
     sensores.printDistances();
-    )
+    
     //totalFrente();
     }
     check_border();
@@ -191,8 +191,8 @@ if (!flagRe){
       vel_motor_1 = 300;
       vel_motor_2 = 300;
     } else if (lastMediaCentro > 60){
-      vel_motor_1 =; 300;
-      vel_motor_2 = 300
+      vel_motor_1 = 300;
+      vel_motor_2 = 300;
     } else{
       vel_motor_1 = 300;
       vel_motor_2 = 300;

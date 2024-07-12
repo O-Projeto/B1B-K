@@ -42,7 +42,7 @@ void VL53_sensors::printDistances() {
       
   }
   Serial.println("\t\t");
-  delay(1000);
+  
 }
 
 void VL53_sensors::printDistancesSensor(int sensor_num) {
