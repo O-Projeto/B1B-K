@@ -3,11 +3,11 @@
 /*Verificar qual b1bk esta sendo usada para setar os trash-holds*/
 
 
+#include <Arduino.h>
 #include "config.hpp"
 #include "H_bridge_TB6612.hpp"
 //#include <BluetoothSerial.h>
 #include "VL53_sensors.hpp"
-#include <Arduino.h>
 #include <Wire.h>
 #include "controle_juiz.hpp"
 #include "refletancia.h"
@@ -20,8 +20,8 @@ QueueHandle_t distanceQueue;
 
 controle_juiz controle_sony(34);
 
-refletancia qr_dir(qrDir, 1400);
-refletancia qr_esq(qrEsq, 1400);
+refletancia qr_dir(qrDir, 800);
+refletancia qr_esq(qrEsq, 800);
 
 led_rgb LED;
 
@@ -61,7 +61,8 @@ void search();
 void check_border();
 void re();
 void totalFrente();
-void meiaLua();
+void meiaLuaDireita();
+void meiaLuaEsquerda();
 void strategy_selector();
 void frenteUmPouco();
 
@@ -76,7 +77,7 @@ int calculateDistance(int distances[]);
 enum {
   S0, 
   S1,
-  S2, 
+  S2,
 };
 int strategy;
 
@@ -126,12 +127,19 @@ void loop() {
     // sensores.distanceRead();
     strategy_selector();
     if (strategyDone){
-    updateCalculatedDistance();
+    //updateCalculatedDistance();
     search();
-    //totalFrente();
+
+    
     }
+    if ((strategy == S1 || strategy == S2)&&(sensores.dist[1]<=400 && sensores.dist[2]<=400)){
+      vel_motor_1 = 550;
+      vel_motor_2 = 550;
+    }
+    totalFrente();
     check_border();
     re();
+
     drive(vel_motor_1,vel_motor_2);
     last_ir = TWO;
     break;
@@ -159,6 +167,7 @@ void loop() {
   case SIX:
     strategy = S2;
     last_ir = S2;
+    LED.fill(MAGENTA);
   break;
   default:
   break;
@@ -180,63 +189,90 @@ void search()
     // Imprime a distância calculada armazenada na variável global
     // printCalculatedDistance();
 if (!flagRe){
+    vel_motor_1 =550;
+    vel_motor_2 = 550; 
+  /*
   // mediaCentro = sensores.PesosDistancias();
   mediaCentro = calculatedDistance;
  // Serial.println(mediaCentro);
   if (mediaCentro == -9999){
     if (lastMediaCentro < -60){
-      vel_motor_1 = -200;
-      vel_motor_2 = 300;
-    } else if (lastMediaCentro > 60){
-      vel_motor_1 = 300;
-      vel_motor_2 = -200;
-    } else{
-      vel_motor_1 = 300;
-      vel_motor_2 = 300;
-    }
-    }else if(mediaCentro < 150 && mediaCentro > 60){ 
-      vel_motor_1 = 600;
-      vel_motor_2 = 200;
-    }else if (mediaCentro > -150 && mediaCentro < -60){
-      vel_motor_1 = 200;
-      vel_motor_2 = 600;
-    }else if (mediaCentro < -150){
       vel_motor_1 = 200;
       vel_motor_2 = 400;
-    } else if (mediaCentro > 150){
+    } else if (lastMediaCentro > 60){
       vel_motor_1 = 400;
       vel_motor_2 = 200;
-    } else {
+    } else{
+      vel_motor_1 = 350;
+      vel_motor_2 = 300;
+    }
+    }else if(mediaCentro < 150 && mediaCentro > 50){ 
+      vel_motor_1 = 400;
+      vel_motor_2 = 100;
+    }else if (mediaCentro > -150 && mediaCentro < -50){
+      vel_motor_1 = 100;
+      vel_motor_2 = 400;
+    }else if (mediaCentro < -60){
+      vel_motor_1 = 100;
+      vel_motor_2 = 600;
+    } else if (mediaCentro > 60){
       vel_motor_1 = 600;
+      vel_motor_2 = 100;
+    } else {
+      vel_motor_1 = 650;
       vel_motor_2 = 600;
     }
     lastMediaCentro = mediaCentro;
-  }
+  }*/
+}
 }
 
 void re(){
-    current_time = millis();
+  current_time = millis();
     if(current_time - start_time < tempoRe && flagRe){
       if (border_dir && border_esq){
-        tempoRe = 200;
+        tempoRe = 350;
+        vel_motor_1 = -600;
+        vel_motor_2 = -600;
+      }else if (border_dir){
+        tempoRe = 350;
+        vel_motor_1 = -100;
+        vel_motor_2 = -700;
+      }else if (border_esq){
+        tempoRe = 350;
+        vel_motor_1 = -700;
+        vel_motor_2 = -100;
+      }else{
         vel_motor_1 = -700;
         vel_motor_2 = -700;
-      }else if (border_dir){
-        tempoRe = 200;
-        vel_motor_1 = -200;
-        vel_motor_2 = -800;
-      }else if (border_esq){
-        tempoRe = 200;
-        vel_motor_1 = -800;
-        vel_motor_2 = -200;
-      }else{
-        vel_motor_1 = 700;
-        vel_motor_2 = -500;
       }
     } else{        
         tempoRe = 0;
         flagRe = 0;
     }
+  /*
+    current_time = millis();
+    if(current_time - start_time < tempoRe && flagRe){
+      if (border_dir && border_esq){
+        tempoRe = 400;
+        vel_motor_1 = -700;
+        vel_motor_2 = -700;
+      }else if (border_dir){
+        tempoRe = 400;
+        vel_motor_1 = -200;
+        vel_motor_2 = -800;
+      }else if (border_esq){
+        tempoRe = 400;
+        vel_motor_1 = -800;
+        vel_motor_2 = -200;
+      }else{
+        vel_motor_1 = -700;
+        vel_motor_2 = -700;
+      }
+    } else{        
+        tempoRe = 0;
+        flagRe = 0;
+    }*/
 }
 
 void check_border()
@@ -247,47 +283,18 @@ void check_border()
   }
     last_line_detected = line_detected;
   if (border_dir || border_esq){
-    tempoRe = 200;
+    tempoRe = 300;
     line_detected = 1;
     flagRe = 1;
   }
   else {line_detected=0;}
   }
 
-void readSensorsTask(void *pvParameters) {
-    int distances[NUM_SENSORS];
-    while (1) {
-        sensores.distanceRead();
-        for (int i = 0; i < NUM_SENSORS; i++) {
-            distances[i] = sensores.dist[i];
-        }
-        // Envia as distâncias para a fila sem bloquear
-        xQueueSendFromISR(distanceQueue, &distances, NULL);
-    }
-}
 
-void updateCalculatedDistance() {
-    int distances[NUM_SENSORS];
 
-    // Tenta ler da fila sem bloquear
-    if (xQueueReceive(distanceQueue, &distances, 0)) {
-        // Calcula o valor com base nas leituras dos sensores
-        calculatedDistance = calculateDistance(distances);
-    }
-}
-
-void printCalculatedDistance() {
-    Serial.print("Calculated Distance: ");
-    Serial.println(calculatedDistance);
-}
 
 int calculateDistance(int distances[]) {
-    // Exemplo de cálculo: média das distâncias
-    // int sum = 0;
-    // for (int i = 0; i < NUM_SENSORS; i++) {
-    //     sum += distances[i];
-    // }
-    // return sum / NUM_SENSORS;
+
 
 	 int Media[NUM_SENSORS] = {25,5,-5,-25}, distanciaP=0, distanciaN=0;
   for (int i=0; i<=NUM_SENSORS; i++){
@@ -302,15 +309,16 @@ int calculateDistance(int distances[]) {
 
 }
 
-void meiaLua()
+void meiaLuaDireita()
 {
-  current_time = millis();
-  if (current_time - start_timeStrategy <= strategyTime){
   vel_motor_1 = 1000;
-  vel_motor_2 = 600;
-  } else {
-  strategyDone = 1;
-  }
+  vel_motor_2 = 400;
+
+}
+void meiaLuaEsquerda()
+{
+  vel_motor_1 = 500;
+  vel_motor_2 = 1000;
 
 }
 
@@ -318,8 +326,8 @@ void frenteUmPouco()
 {
   current_time = millis();
   if (current_time - start_timeStrategy <= strategyTime){
-  vel_motor_1 = 300;
-  vel_motor_2 = 300;
+  vel_motor_1 = 450;
+  vel_motor_2 = 400;
   } else {
   strategyDone = 1;
   }
@@ -329,15 +337,16 @@ void frenteUmPouco()
 void totalFrente()
 {
   if (!flagRe){
-    if ((sensores.dist[1] <= 80 && sensores.dist[2]<=80) && !enemyfront){
+
+    if ((sensores.dist[1] <= 200 || sensores.dist[2]<=200) && !enemyfront ){
 
       start_time = millis ();
       enemyfront = 1;
-    } else if (!(sensores.dist[1] <= 80 && sensores.dist[2]<=80)){
+    } else if (sensores.dist[1] >= 200 && sensores.dist[2]>=200){
       enemyfront = 0;
     }
   
-  if (millis() - start_time >= frenteTime){
+  if ((millis() - start_time >= frenteTime)&& enemyfront){
   vel_motor_1 = 1000;
   vel_motor_2 = 1000;
   } 
@@ -358,13 +367,37 @@ void strategy_selector()
       frenteUmPouco();
       break;   
     case S1:
-      strategyTime = 3000;
-      meiaLua();
+      meiaLuaDireita();
       break;
       case S2:
-      strategyTime = 60000;
-      meiaLua();
+      meiaLuaEsquerda();
       break;
     }
   }
+}
+
+void printCalculatedDistance() {
+    Serial.print("Calculated Distance: ");
+    Serial.println(calculatedDistance);
+    //delay(500);
+}
+void updateCalculatedDistance() {
+    int distances[NUM_SENSORS];
+
+    // Tenta ler da fila sem bloquear
+    if (xQueueReceive(distanceQueue, &distances, 0)) {
+        // Calcula o valor com base nas leituras dos sensores
+        calculatedDistance = calculateDistance(distances);
+    }
+}
+void readSensorsTask(void *pvParameters) {
+    int distances[NUM_SENSORS];
+    while (1) {
+        sensores.distanceRead();
+        for (int i = 0; i < NUM_SENSORS; i++) {
+            distances[i] = sensores.dist[i];
+        }
+        // Envia as distâncias para a fila sem bloquear
+        xQueueSendFromISR(distanceQueue, &distances, NULL);
+    }
 }

@@ -12,31 +12,31 @@
             "type": "platformio-debug",
             "request": "launch",
             "name": "PIO Debug",
-            "executable": "c:/Users/pastu/OneDrive/Documentos/b1bk/B1B-K/.pio/build/Fight-SEGUE_MAO/firmware.elf",
-            "projectEnvName": "Fight-SEGUE_MAO",
-            "toolchainBinDir": "C:/Users/pastu/.platformio/packages/toolchain-xtensa-esp32/bin",
+            "executable": "/home/carneiro/Documentos/B1B-K/.pio/build/Fight-ENEMY_TRACKER/firmware.elf",
+            "projectEnvName": "Fight-ENEMY_TRACKER",
+            "toolchainBinDir": "/home/carneiro/.platformio/packages/toolchain-xtensa-esp32/bin",
             "internalConsoleOptions": "openOnSessionStart",
             "preLaunchTask": {
                 "type": "PlatformIO",
-                "task": "Pre-Debug (Fight-SEGUE_MAO)"
+                "task": "Pre-Debug (Fight-ENEMY_TRACKER)"
             }
         },
         {
             "type": "platformio-debug",
             "request": "launch",
             "name": "PIO Debug (skip Pre-Debug)",
-            "executable": "c:/Users/pastu/OneDrive/Documentos/b1bk/B1B-K/.pio/build/Fight-SEGUE_MAO/firmware.elf",
-            "projectEnvName": "Fight-SEGUE_MAO",
-            "toolchainBinDir": "C:/Users/pastu/.platformio/packages/toolchain-xtensa-esp32/bin",
+            "executable": "/home/carneiro/Documentos/B1B-K/.pio/build/Fight-ENEMY_TRACKER/firmware.elf",
+            "projectEnvName": "Fight-ENEMY_TRACKER",
+            "toolchainBinDir": "/home/carneiro/.platformio/packages/toolchain-xtensa-esp32/bin",
             "internalConsoleOptions": "openOnSessionStart"
         },
         {
             "type": "platformio-debug",
             "request": "launch",
             "name": "PIO Debug (without uploading)",
-            "executable": "c:/Users/pastu/OneDrive/Documentos/b1bk/B1B-K/.pio/build/Fight-SEGUE_MAO/firmware.elf",
-            "projectEnvName": "Fight-SEGUE_MAO",
-            "toolchainBinDir": "C:/Users/pastu/.platformio/packages/toolchain-xtensa-esp32/bin",
+            "executable": "/home/carneiro/Documentos/B1B-K/.pio/build/Fight-ENEMY_TRACKER/firmware.elf",
+            "projectEnvName": "Fight-ENEMY_TRACKER",
+            "toolchainBinDir": "/home/carneiro/.platformio/packages/toolchain-xtensa-esp32/bin",
             "internalConsoleOptions": "openOnSessionStart",
             "loadMode": "manual"
         }
