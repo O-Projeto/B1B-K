@@ -20,8 +20,8 @@ QueueHandle_t distanceQueue;
 
 controle_juiz controle_sony(34);
 
-refletancia qr_dir(qrDir, 1400);
-refletancia qr_esq(qrEsq, 1400);
+refletancia qr_dir(qrDir, 800);
+refletancia qr_esq(qrEsq, 800);
 
 led_rgb LED;
 
@@ -128,9 +128,13 @@ void loop() {
     if (strategyDone){
     updateCalculatedDistance();
     search();
-    printCalculatedDistance();
-    sensores.printDistances();
-    
+    //printCalculatedDistance();
+    //sensores.printDistances();
+    /*
+    Serial.print("Velocidade Direita: ");
+    Serial.print(vel_motor_2);
+    Serial.print("   Velocidade Esquerda: ");
+    Serial.println(vel_motor_1);*/
     //totalFrente();
     }
     check_border();
@@ -188,14 +192,14 @@ if (!flagRe){
  // Serial.println(mediaCentro);
   if (mediaCentro == -9999){
     if (lastMediaCentro < -60){
-      vel_motor_1 = 300;
-      vel_motor_2 = 300;
+      vel_motor_1 = 0;
+      vel_motor_2 = 0;
     } else if (lastMediaCentro > 60){
-      vel_motor_1 = 300;
-      vel_motor_2 = 300;
+      vel_motor_1 =0;
+      vel_motor_2 = 0;
     } else{
-      vel_motor_1 = 300;
-      vel_motor_2 = 300;
+      vel_motor_1 = 0;
+      vel_motor_2 = 0;
     }
     }else if(mediaCentro < 150 && mediaCentro > 60){ 
       vel_motor_1 = 600;
@@ -210,8 +214,8 @@ if (!flagRe){
       vel_motor_1 = 400;
       vel_motor_2 = 200;
     } else {
-      vel_motor_1 = 600;
-      vel_motor_2 = 600;
+      vel_motor_1 = 0;
+      vel_motor_2 = 0;
     }
     lastMediaCentro = mediaCentro;
   }
@@ -221,20 +225,20 @@ void re(){
     current_time = millis();
     if(current_time - start_time < tempoRe && flagRe){
       if (border_dir && border_esq){
-        tempoRe = 200;
+        tempoRe = 300;
         vel_motor_1 = -700;
         vel_motor_2 = -700;
       }else if (border_dir){
-        tempoRe = 200;
+        tempoRe = 300;
         vel_motor_1 = -200;
         vel_motor_2 = -800;
       }else if (border_esq){
-        tempoRe = 200;
+        tempoRe = 300;
         vel_motor_1 = -800;
         vel_motor_2 = -200;
       }else{
-        vel_motor_1 = 700;
-        vel_motor_2 = -500;
+        vel_motor_1 = -700;
+        vel_motor_2 = -700;
       }
     } else{        
         tempoRe = 0;
@@ -262,7 +266,7 @@ void check_border()
 int calculateDistance(int distances[]) {
 	 int Media[NUM_SENSORS] = {25,5,-5,-25}, distanciaP=0, distanciaN=0;
   for (int i=0; i<=NUM_SENSORS; i++){
-    if (distances[i]>500){distances[i]=0;}
+    if (distances[i]>300){distances[i]=0;}
     Media[i] = distances[i]*Media[i];
   }
     distanciaP=(Media[0]+Media[1])/30;
