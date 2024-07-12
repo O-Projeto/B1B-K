@@ -20,8 +20,8 @@ QueueHandle_t distanceQueue;
 
 controle_juiz controle_sony(34);
 
-refletancia qr_dir(qrDir, 800);
-refletancia qr_esq(qrEsq, 800);
+refletancia qr_dir(qrDir, 300);
+refletancia qr_esq(qrEsq, 300);
 
 led_rgb LED;
 
@@ -47,13 +47,13 @@ int last_ir = 0;
 int vel_motor_1;
 int vel_motor_2;
 
-int mediaCentro, lastMediaCentro=0;
+int mediaCentro, lastMediaCentro=10000;
 
 int strategyDone=0;
 int strategyStart=0;
 float start_timeStrategy = 0;
 int strategyTime = 0;
-int start_timeFrente=0,frenteTime=1000, enemyfront= 0; 
+int start_timeFrente=0,frenteTime=1000, enemyfront= 0, startFrente_flag = 0; 
 
 
 void drive(int mot1, int mot2);
@@ -128,13 +128,13 @@ void loop() {
     if (strategyDone){
     updateCalculatedDistance();
     search();
-    //printCalculatedDistance();
-    //sensores.printDistances();
-    /*
-    Serial.print("Velocidade Direita: ");
-    Serial.print(vel_motor_2);
-    Serial.print("   Velocidade Esquerda: ");
-    Serial.println(vel_motor_1);*/
+    // printCalculatedDistance();
+    // sensores.printDistances();
+  
+    // Serial.print("Velocidade Direita: ");
+    // Serial.print(vel_motor_2);
+    // Serial.print("   Velocidade Esquerda: ");
+    // Serial.println(vel_motor_1);
     //totalFrente();
     }
     check_border();
@@ -152,6 +152,7 @@ void loop() {
     strategyStart = 0;
     strategyDone=0;
     lastMediaCentro = 0;
+    enemyfront = 0;
     break;
   case FOUR:
     strategy = S0;
@@ -189,36 +190,69 @@ void search()
 if (!flagRe){
   // mediaCentro = sensores.PesosDistancias();
   mediaCentro = calculatedDistance;
- // Serial.println(mediaCentro);
+//  Serial.println(lastMediaCentro);
   if (mediaCentro == -9999){
-    if (lastMediaCentro < -60){
+    if (lastMediaCentro < 0 && lastMediaCentro > -9999){
       vel_motor_1 = 0;
-      vel_motor_2 = 0;
-    } else if (lastMediaCentro > 60){
-      vel_motor_1 =0;
-      vel_motor_2 = 0;
-    } else{
-      vel_motor_1 = 0;
+      vel_motor_2 = 300;
+    } else {
+      vel_motor_1 =300;
       vel_motor_2 = 0;
     }
-    }else if(mediaCentro < 150 && mediaCentro > 60){ 
-      vel_motor_1 = 600;
-      vel_motor_2 = 200;
-    }else if (mediaCentro > -150 && mediaCentro < -60){
+    }
+    // 1 - esquerda longe - lento esquerda
+    else if(mediaCentro <= -200){
+      vel_motor_1 = 100;
+      vel_motor_2 = 250;
+      enemyfront = 0; 
+    // 2 - esquerda perto - rápido esquerda
+    }else if (mediaCentro > -200 && mediaCentro < -51){
       vel_motor_1 = 200;
       vel_motor_2 = 600;
-    }else if (mediaCentro < -150){
+      // enemyfront = 0; 
+    // 3 - frente esquerda longe - lento esquerda
+    }else if(mediaCentro > -50  && mediaCentro < -26){ 
+      vel_motor_1 = 100;
+      vel_motor_2 = 250;
+      // enemyfront = 0; 
+    // 4 - frente esquerda perto - rápido esquerda
+    }else if(mediaCentro > -25 && mediaCentro < -11){ 
       vel_motor_1 = 200;
-      vel_motor_2 = 400;
-    } else if (mediaCentro > 150){
-      vel_motor_1 = 400;
+      vel_motor_2 = 600;
+      enemyfront = 0; 
+    // 5 - frente !!! - Ataca!!!
+    }else if(mediaCentro <= 10 && mediaCentro >= -10){ 
+      vel_motor_1 = 600;
+      vel_motor_2 = 600;
+      enemyfront = 1;
+      // totalFrente();
+    // 6 - frente direita perto - rápido direita 
+    }else if(mediaCentro <= 25 && mediaCentro > 11){ 
+      vel_motor_1 = 600;
       vel_motor_2 = 200;
+      // enemyfront = 0; 
+    // 7 - frente direita longe - lento direita
+    }else if(mediaCentro <= 50 && mediaCentro > 26){
+      // enemyfront = 0; 
+      vel_motor_1 = 250;
+      vel_motor_2 = 100;
+    // 8 - direita perto - rápido direita
+    }else if(mediaCentro < 200 && mediaCentro > 51){ 
+      vel_motor_1 = 600;
+      vel_motor_2 = 200;
+      // enemyfront = 0;
+    // 9 - direita longe - lento direita 
+    }else if(mediaCentro >= 200 ){ 
+      vel_motor_1 = 250;
+      vel_motor_2 = 100;
+      enemyfront = 0;
     } else {
-      vel_motor_1 = 0;
-      vel_motor_2 = 0;
+      enemyfront = 0;
     }
-    lastMediaCentro = mediaCentro;
-  }
+    if (mediaCentro != -9999){lastMediaCentro = mediaCentro;}
+    if(enemyfront)
+      totalFrente();
+}
 }
 
 void re(){
@@ -264,13 +298,15 @@ void check_border()
 
 
 int calculateDistance(int distances[]) {
-	 int Media[NUM_SENSORS] = {25,5,-5,-25}, distanciaP=0, distanciaN=0;
+	 int Media[NUM_SENSORS] = {50,5,-5,-50}, distanciaP=0, distanciaN=0;
   for (int i=0; i<=NUM_SENSORS; i++){
-    if (distances[i]>300){distances[i]=0;}
+    // alterar para 300 pro segue mão de teste
+    // 500 na luta
+    if (distances[i]>400){distances[i]=0;}
     Media[i] = distances[i]*Media[i];
   }
-    distanciaP=(Media[0]+Media[1])/30;
-    distanciaN=(Media[2]+Media[3])/30;
+    distanciaP=(Media[0]+Media[1])/55;
+    distanciaN=(Media[2]+Media[3])/55;
     if (distanciaP == 0 && distanciaN == 0){return -9999;}
     return (distanciaP+distanciaN);
 
@@ -302,23 +338,24 @@ void frenteUmPouco()
 }
 
 void totalFrente()
-{
-  if (!flagRe){
-    if ((sensores.dist[1] <= 80 && sensores.dist[2]<=80) && !enemyfront){
+{ 
+
+/*    if (!enemyfront){
 
       start_time = millis ();
       enemyfront = 1;
-    } else if (!(sensores.dist[1] <= 80 && sensores.dist[2]<=80)){
-      enemyfront = 0;
     }
-  
-  if (millis() - start_time >= frenteTime){
-  vel_motor_1 = 1000;
-  vel_motor_2 = 1000;
-  } 
+  */
+  if(!startFrente_flag)
+    start_timeFrente = millis ();
+  startFrente_flag = 1;
+  if (millis() - start_timeFrente >= frenteTime){
+    vel_motor_1 = 1000;
+    vel_motor_2 = 1000;
   }
-
 }
+
+
 
 void strategy_selector()
 {
