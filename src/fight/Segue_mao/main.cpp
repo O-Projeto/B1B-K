@@ -20,8 +20,8 @@ QueueHandle_t distanceQueue;
 
 controle_juiz controle_sony(34);
 
-refletancia qr_dir(qrDir, 300);
-refletancia qr_esq(qrEsq, 300);
+refletancia qr_dir(qrDir, 50);
+refletancia qr_esq(qrEsq, 50);
 
 led_rgb LED;
 
@@ -230,7 +230,7 @@ if (!flagRe){
     }else if(mediaCentro <= 25 && mediaCentro > 11){ 
       vel_motor_1 = 600;
       vel_motor_2 = 200;
-      // enemyfront = 0; 
+      enemyfront = 0; 
     // 7 - frente direita longe - lento direita
     }else if(mediaCentro <= 50 && mediaCentro > 26){
       // enemyfront = 0; 
@@ -350,8 +350,8 @@ void totalFrente()
     start_timeFrente = millis ();
   startFrente_flag = 1;
   if (millis() - start_timeFrente >= frenteTime){
-    vel_motor_1 = 1000;
-    vel_motor_2 = 1000;
+    vel_motor_1 = 900;
+    vel_motor_2 = 900;
   }
 }
 

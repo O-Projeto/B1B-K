@@ -86,8 +86,8 @@ void re(){
     if(current_time - start_time < tempoRe && flagRe){
       if (border_dir && border_esq){
         tempoRe = 500;
-        vel_motor_1 = -600;
-        vel_motor_2 = -600;
+        vel_motor_1 = -550;
+        vel_motor_2 = -550;
       }else if (border_dir){
         tempoRe = 500;
         vel_motor_1 = -200;
@@ -97,8 +97,8 @@ void re(){
         vel_motor_1 = -600;
         vel_motor_2 = -200;
       }else{
-        vel_motor_1 = -600;
-        vel_motor_2 = -600;
+        vel_motor_1 = -550;
+        vel_motor_2 = -550;
       }
     } else{        
         tempoRe = 0;
