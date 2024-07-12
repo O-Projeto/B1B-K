@@ -99,9 +99,9 @@ void setup()
       "ReadSensorsTask",  // Nome da tarefa
       2048,  // Tamanho da pilha
       NULL,  // Parâmetro da tarefa
-      1,  // Prioridade da tarefa
+      2,  // Prioridade da tarefa
       NULL,  // Handle da tarefa
-      1  // Core
+      0  // Core
   );
 
 }
@@ -128,6 +128,9 @@ void loop() {
     if (strategyDone){
     updateCalculatedDistance();
     search();
+    printCalculatedDistance();
+    sensores.printDistances();
+    )
     //totalFrente();
     }
     check_border();
@@ -185,11 +188,11 @@ if (!flagRe){
  // Serial.println(mediaCentro);
   if (mediaCentro == -9999){
     if (lastMediaCentro < -60){
-      vel_motor_1 = -200;
+      vel_motor_1 = 300;
       vel_motor_2 = 300;
     } else if (lastMediaCentro > 60){
-      vel_motor_1 = 300;
-      vel_motor_2 = -200;
+      vel_motor_1 =; 300;
+      vel_motor_2 = 300
     } else{
       vel_motor_1 = 300;
       vel_motor_2 = 300;
@@ -254,41 +257,9 @@ void check_border()
   else {line_detected=0;}
   }
 
-void readSensorsTask(void *pvParameters) {
-    int distances[NUM_SENSORS];
-    while (1) {
-        sensores.distanceRead();
-        for (int i = 0; i < NUM_SENSORS; i++) {
-            distances[i] = sensores.dist[i];
-        }
-        // Envia as distâncias para a fila sem bloquear
-        xQueueSendFromISR(distanceQueue, &distances, NULL);
-    }
-}
 
-void updateCalculatedDistance() {
-    int distances[NUM_SENSORS];
-
-    // Tenta ler da fila sem bloquear
-    if (xQueueReceive(distanceQueue, &distances, 0)) {
-        // Calcula o valor com base nas leituras dos sensores
-        calculatedDistance = calculateDistance(distances);
-    }
-}
-
-void printCalculatedDistance() {
-    Serial.print("Calculated Distance: ");
-    Serial.println(calculatedDistance);
-}
 
 int calculateDistance(int distances[]) {
-    // Exemplo de cálculo: média das distâncias
-    // int sum = 0;
-    // for (int i = 0; i < NUM_SENSORS; i++) {
-    //     sum += distances[i];
-    // }
-    // return sum / NUM_SENSORS;
-
 	 int Media[NUM_SENSORS] = {25,5,-5,-25}, distanciaP=0, distanciaN=0;
   for (int i=0; i<=NUM_SENSORS; i++){
     if (distances[i]>500){distances[i]=0;}
@@ -318,8 +289,8 @@ void frenteUmPouco()
 {
   current_time = millis();
   if (current_time - start_timeStrategy <= strategyTime){
-  vel_motor_1 = 300;
-  vel_motor_2 = 300;
+  vel_motor_1 = 400;
+  vel_motor_2 = 400;
   } else {
   strategyDone = 1;
   }
@@ -367,4 +338,29 @@ void strategy_selector()
       break;
     }
   }
+}
+void updateCalculatedDistance() {
+    int distances[NUM_SENSORS];
+
+    // Tenta ler da fila sem bloquear
+    if (xQueueReceive(distanceQueue, &distances, 0)) {
+        // Calcula o valor com base nas leituras dos sensores
+        calculatedDistance = calculateDistance(distances);
+    }
+}
+
+void printCalculatedDistance() {
+    Serial.print("Calculated Distance: ");
+    Serial.println(calculatedDistance);
+}
+void readSensorsTask(void *pvParameters) {
+    int distances[NUM_SENSORS];
+    while (1) {
+        sensores.distanceRead();
+        for (int i = 0; i < NUM_SENSORS; i++) {
+            distances[i] = sensores.dist[i];
+        }
+        // Envia as distâncias para a fila sem bloquear
+        xQueueSendFromISR(distanceQueue, &distances, NULL);
+    }
 }
