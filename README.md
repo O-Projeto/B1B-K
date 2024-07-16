@@ -1,5 +1,33 @@
 # B1B-K
 
+#todo - 
+Deixar as libs em devices!!!
+
+NA fight deixar o enemy tracker [:s]
+e diferentes códigos de luta [:s]
+Funciona controle [:s] ok
+Leitura vl no segundo core ok
+Trashhold das duas b1b-ks  
+Funciona ré  ok
+PID!!!!
+para integrar dps 
+snake_case, primeira letra maiuscula- nome da pasta de origem
+
+O segue mão lê os vls e funciona, só tirar os delays
+
+Devices-vls
+Devices-rgb
+Devices-motor
+Devices-refletancia
+
+Fight-enemy_tracker
+Main-main
+
+documentar no começo do código que é importante verificar qual das b1b-ks por conta dos sensores
+
+Validar eletrônica dos dois, deixar motores iguais
+
+
 README para saber como ler a prog da B1B-K.
 ## Bibliotecas
 

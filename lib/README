@@ -11,7 +11,7 @@ For example, see a structure of the following two libraries `Foo` and `Bar`:
 |  |
 |  |--Bar
 |  |  |--docs
-|  |  |--examples
+|  |  |--devices
 |  |  |--src
 |  |     |- Bar.c
 |  |     |- Bar.h
