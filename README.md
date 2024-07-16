@@ -1,5 +1,11 @@
 # B1B-K
 
+Robô autônomo de mini sumô
+
+// Colocar imagem
+
+Código em cpp utilizar RTOS básico etc
+
 #todo - 
 Deixar as libs em devices!!!
 
