@@ -40,5 +40,5 @@ void loop(){
     Serial.print(", ");
     Serial.print(border_lft);
     Serial.println("\t");
-    delay(1000);   
+    // delay(1000);   
 }

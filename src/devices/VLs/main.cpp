@@ -42,9 +42,9 @@ void setup() {
         "ReadSensorsTask",  // Nome da tarefa
         2048,  // Tamanho da pilha
         NULL,  // Parâmetro da tarefa
-        1,  // Prioridade da tarefa
+        2,  // Prioridade da tarefa
         NULL,  // Handle da tarefa
-        1  // Core
+        0  // Core
     );
 }
 
@@ -113,7 +113,7 @@ VL53_sensors sensores;
 
 void setup() 
 {
-	Serial.begin(112500);
+	Serial.begin(115200);
 	sensores.sensorsInit();
 }
 void loop() 
