@@ -2,6 +2,8 @@
 
 Robô autônomo de mini sumô
 
+PCB v1: https://oshwlab.com/samuelsilveira14/b1b-k
+
 // Colocar imagem
 
 Código em cpp utilizar RTOS básico etc
