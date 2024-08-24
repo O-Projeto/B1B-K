@@ -20,8 +20,8 @@ QueueHandle_t distanceQueue;
 
 controle_juiz controle_sony(34);
 
-refletancia qr_dir(qrDir, 50);
-refletancia qr_esq(qrEsq, 50);
+refletancia qr_dir(qrDir, 100);
+refletancia qr_esq(qrEsq, 100);
 
 led_rgb LED;
 
@@ -350,8 +350,8 @@ void totalFrente()
     start_timeFrente = millis ();
   startFrente_flag = 1;
   if (millis() - start_timeFrente >= frenteTime){
-    vel_motor_1 = 900;
-    vel_motor_2 = 900;
+    vel_motor_1 = 1000;
+    vel_motor_2 = 1000;
   }
 }
 
@@ -366,27 +366,36 @@ void strategy_selector()
   if (!strategyDone){
     switch (strategy){
     case S0:
-      strategyTime = 500;
+      strategyTime = 100;
       frenteUmPouco();
       break;   
     case S1:
+    /*
       strategyTime = 3000;
       meiaLua();
       break;
       case S2:
       strategyTime = 60000;
-      meiaLua();
+      meiaLua();*/
+      vel_motor_1 = 1000;
+      vel_motor_2 = 1000;
       break;
     }
   }
 }
 void updateCalculatedDistance() {
     int distances[NUM_SENSORS];
-
+    int calcula=0;
     // Tenta ler da fila sem bloquear
     if (xQueueReceive(distanceQueue, &distances, 0)) {
         // Calcula o valor com base nas leituras dos sensores
-        calculatedDistance = calculateDistance(distances);
+      //  calculatedDistance = calculateDistance(distances);
+    //}
+        for (int i=0 ; i<5; i++){
+            calcula += calculateDistance(distances);
+        }
+        calculatedDistance = calcula/5;
+        calcula= 0;
     }
 }
 

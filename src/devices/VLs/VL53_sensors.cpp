@@ -65,3 +65,25 @@ int VL53_sensors::PesosDistancias()
   }
     return distancia/11110;
 }
+
+/*void VL53_sensors::distanceRead() {
+    int mediaVL=0;
+    for (uint8_t i = 0; i < number_sensor; i++)
+    {
+      
+      Serial.print("VL: ");
+      Serial.print(i);
+      for (int j=0; j<5; j++){
+        mediaVL = mediaVL + (sensor[i].readRangeSingleMillimeters() - offset[i]);  
+      }
+
+       dist[i] = mediaVL/5;
+       mediaVL = 0;
+      Serial.print("  dist: ");
+      Serial.print(dist[i]);
+     
+      Serial.print("   ");
+    }   
+    Serial.println("");
+}
+*/
