@@ -85,6 +85,7 @@ void setup()
    // Cria a fila
   distanceQueue = xQueueCreate(10, sizeof(int) * NUM_SENSORS);
 
+  // inicializa 
 	Serial.begin(112500);
 	sensores.sensorsInit();
   controle_sony.init();
@@ -106,10 +107,11 @@ void setup()
 
 }
 void loop() {
+  // leitura do controle e filtro 
   read_ir = controle_sony.read();
   if (last_ir == TWO && (read_ir == ONE || read_ir == -1)){ read_ir = TWO;}
 
-
+  // leitura qr e teste de borda
   read_sensor_dir = qr_dir.read();
   read_sensor_esq = qr_esq.read();
   border_dir = qr_dir.detect_border();
