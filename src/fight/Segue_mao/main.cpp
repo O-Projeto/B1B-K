@@ -1,8 +1,8 @@
-
+// a main inclui uma maquina de estados que definida pelo controle roda o loop (escolha da estrategia e comandos) 
 
 /*Verificar qual b1bk esta sendo usada para setar os trash-holds*/
 
-
+// bibliotecas
 #include "config.hpp"
 #include "H_bridge_TB6612.hpp"
 //#include <BluetoothSerial.h>
@@ -13,6 +13,8 @@
 #include "refletancia.h"
 #include "led_rgb.h"
 
+
+// inicialização dos objetos
 VL53_sensors sensores;
 
 // Handle para a fila
@@ -31,6 +33,7 @@ Motor motor2 = Motor(BIN1, BIN2, PWMB, STBY, offsetB, 10);
 // Variável global para armazenar o valor calculado
 int calculatedDistance = 0;
 
+// variaveis 
 float  read_sensor_dir = 0;
 float read_sensor_esq = 0; 
 bool border_dir, border_esq; 
@@ -55,7 +58,7 @@ float start_timeStrategy = 0;
 int strategyTime = 0;
 int start_timeFrente=0,frenteTime=1000, enemyfront= 0, startFrente_flag = 0; 
 
-
+// Declaração das funções
 void drive(int mot1, int mot2);
 void search();
 void check_border();
@@ -65,27 +68,27 @@ void meiaLua();
 void strategy_selector();
 void frenteUmPouco();
 
-// Declaração das funções
+// Declaração das funções da leitura dos vl's no segundo core
 void readSensorsTask(void *pvParameters);
 void updateCalculatedDistance();
 void printCalculatedDistance();
 int calculateDistance(int distances[]);
 
 
-
+// definição das estrategias por nome (???)
 enum {
   S0, 
   S1,
   S2, 
 };
-int strategy;
+int strategy; // ????
 
 void setup() 
 {
    // Cria a fila
   distanceQueue = xQueueCreate(10, sizeof(int) * NUM_SENSORS);
 
-  // inicializa 
+  // inicialização dos sensores, controles e led
 	Serial.begin(112500);
 	sensores.sensorsInit();
   controle_sony.init();
@@ -124,27 +127,19 @@ void loop() {
       start_time = millis();
       break;
 
-  case TWO:
+  case TWO: // caso loop padrão 
     // sensores.distanceRead();
     strategy_selector();
-    if (strategyDone){
+    if (strategyDone){// se a estratégia estiver feita o código padrão volta ao normal 
     updateCalculatedDistance();
     search();
-    // printCalculatedDistance();
-    // sensores.printDistances();
-  
-    // Serial.print("Velocidade Direita: ");
-    // Serial.print(vel_motor_2);
-    // Serial.print("   Velocidade Esquerda: ");
-    // Serial.println(vel_motor_1);
-    //totalFrente();
     }
     check_border();
     re();
-    drive(vel_motor_1,vel_motor_2);
+    drive(vel_motor_1,vel_motor_2); //unico lugar onde manda velocidade pros motores
     last_ir = TWO;
     break;
-  case TREE:
+  case TREE: //reinicializa tudo (aparentemente não pode por regra do sumo)
     drive(0,0);
     delay(10);
     LED.set(VERMELHO);
@@ -183,18 +178,16 @@ void drive(int mot1, int mot2){
 } 
 void search()
 {
-
     // Atualiza a variável global com a distância calculada
-    
-
     // Imprime a distância calculada armazenada na variável global
     // printCalculatedDistance();
-if (!flagRe){
-  // mediaCentro = sensores.PesosDistancias();
+
+if (!flagRe){ // prioridade da ré
   mediaCentro = calculatedDistance;
 //  Serial.println(lastMediaCentro);
-  if (mediaCentro == -9999){
-    if (lastMediaCentro < 0 && lastMediaCentro > -9999){
+  if (mediaCentro == -9999){ // se perdeu o adversario
+  // melhoria de quadrantes vai ser implementada aqui
+    if (lastMediaCentro < 0 && lastMediaCentro > -9999){ //usando a memoria identifica o ultimo lado que algo foi visto
       vel_motor_1 = 0;
       vel_motor_2 = 300;
     } else {
@@ -202,11 +195,12 @@ if (!flagRe){
       vel_motor_2 = 0;
     }
     }
+    // aqui o search filtra para qual direção  
     // 1 - esquerda longe - lento esquerda
     else if(mediaCentro <= -200){
       vel_motor_1 = 100;
       vel_motor_2 = 250;
-      enemyfront = 0; 
+      enemyfront = 0; // tem que rever onde essa variavel ta sendo zerada
     // 2 - esquerda perto - rápido esquerda
     }else if (mediaCentro > -200 && mediaCentro < -51){
       vel_motor_1 = 200;
@@ -251,7 +245,7 @@ if (!flagRe){
     } else {
       enemyfront = 0;
     }
-    if (mediaCentro != -9999){lastMediaCentro = mediaCentro;}
+    if (mediaCentro != -9999){lastMediaCentro = mediaCentro;} // marca a "memoria"
     if(enemyfront)
       totalFrente();
 }
@@ -260,6 +254,7 @@ if (!flagRe){
 void re(){
     current_time = millis();
     if(current_time - start_time < tempoRe && flagRe){
+      // se o tempo de ré não tiver passado ele ajeita o robo e volta reto
       if (border_dir && border_esq){
         tempoRe = 300;
         vel_motor_1 = -700;
@@ -276,7 +271,7 @@ void re(){
         vel_motor_1 = -700;
         vel_motor_2 = -700;
       }
-    } else{        
+    } else{ // zera as variaveis  
         tempoRe = 0;
         flagRe = 0;
     }
@@ -284,12 +279,13 @@ void re(){
 
 void check_border()
 {
-  if (line_detected != last_line_detected)
+  if (line_detected != last_line_detected) // testa pra caso esteja realmente vendo a linha
   {
     start_time = millis();
   }
-    last_line_detected = line_detected;
-  if (border_dir || border_esq){
+    last_line_detected = line_detected; 
+  if (border_dir || border_esq){ // se viu qualquer borda inicializa as variaveis pra entrar na preferencia da ré e ter 
+  // "tempo" de arrumar
     tempoRe = 200;
     line_detected = 1;
     flagRe = 1;
@@ -300,6 +296,7 @@ void check_border()
 
 
 int calculateDistance(int distances[]) {
+  // joga pesos em cada sensor multiplicando
 	 int Media[NUM_SENSORS] = {50,5,-5,-50}, distanciaP=0, distanciaN=0;
   for (int i=0; i<=NUM_SENSORS; i++){
     // alterar para 300 pro segue mão de teste
@@ -307,16 +304,17 @@ int calculateDistance(int distances[]) {
     if (distances[i]>400){distances[i]=0;}
     Media[i] = distances[i]*Media[i];
   }
+  // soma as partes positivas e negativas dividindo pela soma dos pesos
     distanciaP=(Media[0]+Media[1])/55;
     distanciaN=(Media[2]+Media[3])/55;
-    if (distanciaP == 0 && distanciaN == 0){return -9999;}
-    return (distanciaP+distanciaN);
+    if (distanciaP == 0 && distanciaN == 0){return -9999;} // se tiver zerado então ta fora do raio do sensor 
+    return (distanciaP+distanciaN); // retorna a soma do lado positivo e negativo 
 
 
 }
 
 void meiaLua()
-{
+{ //estratégia que gira em meia lua por certo tempo
   current_time = millis();
   if (current_time - start_timeStrategy <= strategyTime){
   vel_motor_1 = 1000;
@@ -328,7 +326,7 @@ void meiaLua()
 }
 
 void frenteUmPouco()
-{
+{ // vai pra frente por um tempo estimulado
   current_time = millis();
   if (current_time - start_timeStrategy <= strategyTime){
   vel_motor_1 = 400;
@@ -385,19 +383,21 @@ void strategy_selector()
     }
   }
 }
+
+// parte da divisão dos cores pra leitura do vl
 void updateCalculatedDistance() {
     int distances[NUM_SENSORS];
-    int calcula=0;
+    int mediaDistancias=0;
     // Tenta ler da fila sem bloquear
     if (xQueueReceive(distanceQueue, &distances, 0)) {
         // Calcula o valor com base nas leituras dos sensores
       //  calculatedDistance = calculateDistance(distances);
     //}
         for (int i=0 ; i<5; i++){
-            calcula += calculateDistance(distances);
+            mediaDistancias += calculateDistance(distances);
         }
-        calculatedDistance = calcula/5;
-        calcula= 0;
+        calculatedDistance = mediaDistancias/5;
+        mediaDistancias= 0;
     }
 }
 
