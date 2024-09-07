@@ -189,7 +189,6 @@ if (!flagInit)
   start_timeSearch = millis();
 if (!flagRe){ // prioridade da ré
   mediaCentro = calculatedDistance;
-//  Serial.println(lastMediaCentro);
   if (mediaCentro == -9999){ // se perdeu o adversario
     enemyfront = 0;
     // melhoria de quadrantes vai ser implementada aqui
@@ -406,8 +405,7 @@ void strategy_selector()
       break;
     }
   }
-}
-
+} // 
 // parte da divisão dos cores pra leitura do vl
 void updateCalculatedDistance() {
     int distances[NUM_SENSORS];
@@ -440,4 +438,3 @@ void readSensorsTask(void *pvParameters) {
         xQueueSendFromISR(distanceQueue, &distances, NULL);
     }
 }
-//hjkjhgfdc
