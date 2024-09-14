@@ -76,7 +76,7 @@ void loop()
   case ONE:
     last_ir = ONE;
     LED.fill(VERDE);
-    start_time = millis();
+    start_time = millis(); //  REVIEW: Isso não pode dar conflito em algum momento se por acaso ele receber o comando 1?, linha 63 impede isso? Precisa dele aqui?
     break;
 
   case TWO: // caso loop padrão
@@ -362,13 +362,7 @@ void frenteUmPouco()
 
 void totalFrente()
 {
-
-  /*    if (!enemyfront){
-
-        start_time = millis ();
-        enemyfront = 1;
-      }
-    */
+  // REVIEW: excluido código comentado não utilizado mais
   if (!startFrente_flag)
     start_timeFrente = millis();
   startFrente_flag = 1;
@@ -419,7 +413,7 @@ void updateCalculatedDistance()
     // Calcula o valor com base nas leituras dos sensores
     //  calculatedDistance = calculateDistance(distances);
     //}
-    for (int i = 0; i < 5; i++)
+    for (int i = 0; i < 5; i++) // REVIEW: Isso está levando muito tempo? Temos como diminuir? Precisa?
     {
       mediaDistancias += calculateDistance(distances);
     }
