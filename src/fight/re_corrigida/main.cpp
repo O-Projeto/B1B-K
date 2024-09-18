@@ -76,7 +76,7 @@ void loop()
   case ONE:
     last_ir = ONE;
     LED.fill(VERDE);
-    start_time = millis(); //  REVIEW: Isso não pode dar conflito em algum momento se por acaso ele receber o comando 1?, linha 63 impede isso? Precisa dele aqui?
+    // start_time = millis(); //  REVIEW: Isso não pode dar conflito em algum momento se por acaso ele receber o comando 1?, linha 63 impede isso? Precisa dele aqui?
     break;
 
   case TWO: // caso loop padrão
@@ -207,6 +207,8 @@ void search()
         enemyfront = 1;
         // totalFrente();
         // 6 - frente direita perto - rápido direita
+
+        // não dava só pra ter jogado esse else if pra fora pra tirar a preferencia da re??? - nicole
       }
       else if (mediaCentro <= 25 && mediaCentro > 11)
       {
