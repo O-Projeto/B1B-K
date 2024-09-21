@@ -26,7 +26,7 @@ public:
     int dist[NUM_SENSORS];
         // Com trash holder 
     #ifdef B1B_K_3_Led
-        int offset[NUM_SENSORS] = {-20, 0, 0, -45}; //             
+        int offset[NUM_SENSORS] = {45, 70, 68, 25}; //             
     #endif
 
     #ifdef B1B_K_1_Led

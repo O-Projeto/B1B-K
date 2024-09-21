@@ -10,8 +10,8 @@
 #define NUM_SENSORS 4
 
 
- #define B1B_K_1_Led
-//#define B1B_K_3_Led
+//#define B1B_K_1_Led
+#define B1B_K_3_Led
 
 class VL53_sensors
 {
@@ -24,7 +24,7 @@ public:
 
         // Com trash holder 
     #ifdef B1B_K_3_Led
-        int offset[NUM_SENSORS] = {-20, 0, 0, -45}; //             
+        int offset[NUM_SENSORS] = {45, 70, 68, 25}; //             
     #endif
 
     #ifdef B1B_K_1_Led
