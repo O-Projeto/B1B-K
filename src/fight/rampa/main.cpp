@@ -72,6 +72,7 @@ void totalFrente();
 void meiaLua();
 void strategy_selector();
 void frenteUmPouco();
+int rampa(int set_speed, int acc);
 
 // Declaração das funções da leitura dos vl's no segundo core
 void readSensorsTask(void *pvParameters);
@@ -79,6 +80,13 @@ void updateCalculatedDistance();
 void printCalculatedDistance();
 int calculateDistance(int distances[]);
 
+
+// Variaveis rampa aceleracao
+int current_time_rampa = 0;
+int delta_time = 0;
+int speed_increment = 0;
+int last_time_rampa = 0;
+int speed_return = 0;
 
 // definição das estrategias por nome (???)
 enum {
@@ -176,11 +184,13 @@ void loop() {
   break;
 }
    read_ir = controle_sony.read();
+
+
 }
 void drive(int mot1, int mot2){
     motor1.drive(mot1);
     motor2.drive(mot2);
-}  
+} 
 void search()
 {
     // Atualiza a variável global com a distância calculada
@@ -367,12 +377,14 @@ void frenteUmPouco()
 
 void totalFrente()
 { 
+  int velocidade;
   if(!startFrente_flag)
     start_timeFrente = millis ();
   startFrente_flag = 1;
   if (millis() - start_timeFrente >= frenteTime){
-    vel_motor_1 = 1000;
-    vel_motor_2 = 1000;
+    velocidade = rampa(1000, 15000);
+    vel_motor_1 = velocidade;
+    vel_motor_2 = velocidade;
   }
 }
 
@@ -437,3 +449,25 @@ void readSensorsTask(void *pvParameters) {
     }
 }
 
+int rampa(int set_speed, int acc)
+{
+  current_time_rampa = millis();
+  delta_time = current_time_rampa - last_time_rampa;
+  speed_increment = (acc* (delta_time / 1000));
+  last_time_rampa = current_time_rampa;
+
+  if(speed_return < set_speed)
+  {
+    speed_return = speed_return + speed_increment;
+    if(speed_return > set_speed)
+      speed_return = set_speed;
+  }
+
+  if(speed_return > set_speed)
+  {
+    speed_return = speed_return - speed_increment;
+    if(speed_return < set_speed)
+      speed_return = set_speed;
+  }
+  return speed_return;
+}
