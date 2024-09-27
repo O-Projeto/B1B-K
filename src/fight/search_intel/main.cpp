@@ -117,7 +117,7 @@ void setup()
 void loop() {
   // leitura do controle e filtro 
   read_ir = controle_sony.read();
-  if (last_ir == TWO && (read_ir == ONE || read_ir == -1)){ read_ir = TWO;}
+  if (last_ir == TWO && (read_ir != TREE)){ read_ir = TWO;}
 
   // leitura qr e teste de borda
   read_sensor_dir = qr_dir.read();
@@ -175,13 +175,11 @@ void loop() {
   break;
 }
    read_ir = controle_sony.read();
-
-
 }
 void drive(int mot1, int mot2){
     motor1.drive(mot1);
     motor2.drive(mot2);
-} 
+}  
 void search()
 {
     // Atualiza a variável global com a distância calculada
