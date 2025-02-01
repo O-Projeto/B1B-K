@@ -22,8 +22,8 @@ QueueHandle_t distanceQueue;
 
 controle_juiz controle_sony(34);
 
-refletancia qr_dir(qrDir, 100);
-refletancia qr_esq(qrEsq, 100);
+refletancia qr_dir(qrDir, 50);
+refletancia qr_esq(qrEsq, 50); // rcx era entre 50 e 100
 
 led_rgb LED;
 
@@ -43,6 +43,7 @@ float start_time = 0;
 float current_time = 0;
 float tempoRe=0;
 bool flagRe= 0;
+bool prioridadeAtaque = 0;
 
 int read_ir = -1;
 int last_ir = 0;
@@ -58,6 +59,10 @@ float start_timeStrategy = 0;
 int strategyTime = 0;
 int start_timeFrente=0,frenteTime=1000, enemyfront= 0, startFrente_flag = 0; 
 
+// search
+float start_timeSearch = 0;
+bool flagInit = 0;
+
 // Declaração das funções
 void drive(int mot1, int mot2);
 void search();
@@ -67,6 +72,7 @@ void totalFrente();
 void meiaLua();
 void strategy_selector();
 void frenteUmPouco();
+int rampa(int set_speed, int acc);
 
 // Declaração das funções da leitura dos vl's no segundo core
 void readSensorsTask(void *pvParameters);
@@ -74,6 +80,13 @@ void updateCalculatedDistance();
 void printCalculatedDistance();
 int calculateDistance(int distances[]);
 
+
+// Variaveis rampa aceleracao
+int current_time_rampa = 0;
+int delta_time = 0;
+int speed_increment = 0;
+int last_time_rampa = 0;
+int speed_return = 0;
 
 // definição das estrategias por nome (???)
 enum {
@@ -112,7 +125,8 @@ void setup()
 void loop() {
   // leitura do controle e filtro 
   read_ir = controle_sony.read();
-  if (last_ir == TWO && (read_ir == ONE || read_ir == -1)){ read_ir = TWO;}
+  if (last_ir == TWO && (read_ir != TREE)){read_ir = TWO;}
+  else if (last_ir == TREE){read_ir = TREE;}
 
   // leitura qr e teste de borda
   read_sensor_dir = qr_dir.read();
@@ -130,12 +144,12 @@ void loop() {
   case TWO: // caso loop padrão 
     // sensores.distanceRead();
     strategy_selector();
+    check_border();
+    re();
     if (strategyDone){// se a estratégia estiver feita o código padrão volta ao normal 
     updateCalculatedDistance();
     search();
     }
-    check_border();
-    re();
     drive(vel_motor_1,vel_motor_2); //unico lugar onde manda velocidade pros motores
     last_ir = TWO;
     break;
@@ -162,8 +176,9 @@ void loop() {
     LED.fill(MAGENTA);
   break;
   case SIX:
-    strategy = S2;
-    last_ir = S2;
+    prioridadeAtaque = 1;
+    LED.fill(BRANCO);
+    last_ir = SIX;
   break;
   default:
   break;
@@ -181,40 +196,59 @@ void search()
     // Atualiza a variável global com a distância calculada
     // Imprime a distância calculada armazenada na variável global
     // printCalculatedDistance();
+if (!flagInit) start_timeSearch = millis();
 
 if (!flagRe){ // prioridade da ré
   mediaCentro = calculatedDistance;
-//  Serial.println(lastMediaCentro);
   if (mediaCentro == -9999){ // se perdeu o adversario
-  // melhoria de quadrantes vai ser implementada aqui
-    if (lastMediaCentro < 0 && lastMediaCentro > -9999){ //usando a memoria identifica o ultimo lado que algo foi visto
+    enemyfront = 0;
+    // melhoria de quadrantes vai ser implementada aqui
+    flagInit = 1;
+    if (millis() - start_timeSearch < 300){
+      if (lastMediaCentro < 0 && lastMediaCentro > -9999)
+      { // usando a memoria identifica o ultimo lado que algo foi visto
+        vel_motor_1 = -300;
+        vel_motor_2 = 300;
+      }
+      else
+      {
+        vel_motor_1 = 300;
+        vel_motor_2 = -300;
+      }
+    }
+    else if (millis() - start_timeSearch < 800)
+    {
       vel_motor_1 = 0;
-      vel_motor_2 = 300;
-    } else {
-      vel_motor_1 =300;
       vel_motor_2 = 0;
     }
+    else
+    {
+      flagInit = 0;
     }
-    // aqui o search filtra para qual direção  
-    // 1 - esquerda longe - lento esquerda
-    else if(mediaCentro <= -200){
-      vel_motor_1 = 100;
-      vel_motor_2 = 250;
+  }
+  else
+    {
+       flagInit = 0;
+      // aqui o search filtra para qual direção
+      // 1 - esquerda longe - lento esquerda
+      if(mediaCentro <= -200){
+      vel_motor_1 = 200; //100
+      vel_motor_2 = 350; //250
       enemyfront = 0; // tem que rever onde essa variavel ta sendo zerada
     // 2 - esquerda perto - rápido esquerda
     }else if (mediaCentro > -200 && mediaCentro < -51){
-      vel_motor_1 = 200;
-      vel_motor_2 = 600;
+      vel_motor_1 = 400; //300
+      vel_motor_2 = 700; //600
       // enemyfront = 0; 
     // 3 - frente esquerda longe - lento esquerda
     }else if(mediaCentro > -50  && mediaCentro < -26){ 
-      vel_motor_1 = 100;
-      vel_motor_2 = 250;
+      vel_motor_1 =200;
+      vel_motor_2 = 350;
       // enemyfront = 0; 
     // 4 - frente esquerda perto - rápido esquerda
     }else if(mediaCentro > -25 && mediaCentro < -11){ 
-      vel_motor_1 = 200;
-      vel_motor_2 = 600;
+      vel_motor_1 = 400;
+      vel_motor_2 = 700;
       enemyfront = 0; 
     // 5 - frente !!! - Ataca!!!
     }else if(mediaCentro <= 10 && mediaCentro >= -10){ 
@@ -224,30 +258,34 @@ if (!flagRe){ // prioridade da ré
       // totalFrente();
     // 6 - frente direita perto - rápido direita 
     }else if(mediaCentro <= 25 && mediaCentro > 11){ 
-      vel_motor_1 = 600;
-      vel_motor_2 = 200;
+      vel_motor_1 = 700;
+      vel_motor_2 = 400;
       enemyfront = 0; 
     // 7 - frente direita longe - lento direita
     }else if(mediaCentro <= 50 && mediaCentro > 26){
-      // enemyfront = 0; 
-      vel_motor_1 = 250;
-      vel_motor_2 = 100;
+       enemyfront = 0; 
+      vel_motor_1 = 350;
+      vel_motor_2 = 200;
     // 8 - direita perto - rápido direita
     }else if(mediaCentro < 200 && mediaCentro > 51){ 
-      vel_motor_1 = 600;
-      vel_motor_2 = 200;
-      // enemyfront = 0;
+      vel_motor_1 = 700;
+      vel_motor_2 = 400;
+       enemyfront = 0;
     // 9 - direita longe - lento direita 
     }else if(mediaCentro >= 200 ){ 
-      vel_motor_1 = 250;
-      vel_motor_2 = 100;
+      vel_motor_1 = 350;
+      vel_motor_2 = 200;
       enemyfront = 0;
     } else {
       enemyfront = 0;
     }
-    if (mediaCentro != -9999){lastMediaCentro = mediaCentro;} // marca a "memoria"
-    if(enemyfront)
-      totalFrente();
+    }
+    if(mediaCentro != -9999){lastMediaCentro = mediaCentro;} // marca a "memoria"
+    if(enemyfront) {totalFrente();}
+}
+else if(prioridadeAtaque && (lastMediaCentro <= 10 && lastMediaCentro >= -10)){
+  totalFrente();
+  if(calculatedDistance != -9999) lastMediaCentro = calculatedDistance;
 }
 }
 
@@ -339,19 +377,14 @@ void frenteUmPouco()
 
 void totalFrente()
 { 
-
-/*    if (!enemyfront){
-
-      start_time = millis ();
-      enemyfront = 1;
-    }
-  */
+  int velocidade;
   if(!startFrente_flag)
     start_timeFrente = millis ();
   startFrente_flag = 1;
   if (millis() - start_timeFrente >= frenteTime){
-    vel_motor_1 = 1000;
-    vel_motor_2 = 1000;
+    velocidade = rampa(1000, 15000);
+    vel_motor_1 = velocidade;
+    vel_motor_2 = velocidade;
   }
 }
 
@@ -382,8 +415,7 @@ void strategy_selector()
       break;
     }
   }
-}
-
+} // 
 // parte da divisão dos cores pra leitura do vl
 void updateCalculatedDistance() {
     int distances[NUM_SENSORS];
@@ -415,4 +447,27 @@ void readSensorsTask(void *pvParameters) {
         // Envia as distâncias para a fila sem bloquear
         xQueueSendFromISR(distanceQueue, &distances, NULL);
     }
+}
+
+int rampa(int set_speed, int acc)
+{
+  current_time_rampa = millis();
+  delta_time = current_time_rampa - last_time_rampa;
+  speed_increment = (acc* (delta_time / 1000));
+  last_time_rampa = current_time_rampa;
+
+  if(speed_return < set_speed)
+  {
+    speed_return = speed_return + speed_increment;
+    if(speed_return > set_speed)
+      speed_return = set_speed;
+  }
+
+  if(speed_return > set_speed)
+  {
+    speed_return = speed_return - speed_increment;
+    if(speed_return < set_speed)
+      speed_return = set_speed;
+  }
+  return speed_return;
 }

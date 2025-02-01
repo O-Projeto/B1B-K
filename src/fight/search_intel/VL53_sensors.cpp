@@ -1,5 +1,4 @@
-#include "VL53_sensors.h"
-
+#include "VL53_sensors.hpp"
 
 void VL53_sensors::sensorsInit() {
 
@@ -43,7 +42,7 @@ void VL53_sensors::printDistances() {
       
   }
   Serial.println("\t\t");
-  // delay(1000);
+  
 }
 
 void VL53_sensors::printDistancesSensor(int sensor_num) {
@@ -54,36 +53,20 @@ void VL53_sensors::printDistancesSensor(int sensor_num) {
     Serial.println(dist[sensor_num]);
 
 }
-
+// 
+/*testa todos as distancias, filtrando as que tão muito longe 
+  multiplica as distancias pelos pesos 
+  soma a distancia positiva e faz a media (msm coisa ngativa)
+  testa se os dois tao zrados e se nao soma e retorna o valores*/
 int VL53_sensors::PesosDistancias()
 { 
-  int pesos = 10, Media[number_sensor], distancia=0;
+  int Media[number_sensor] = {25,5,-5,-25}, distanciaP=0, distanciaN=0;
   for (int i=0; i<=number_sensor; i++){
-    Media[i] = dist[i]*pesos;
-    pesos = pesos * 10;
-    distancia+=Media[i];
+    if (dist[i]>300){dist[i]=0;}
+    Media[i] = dist[i]*Media[i];
   }
-    return distancia/11110;
+    distanciaP=(Media[0]+Media[1])/30;
+    distanciaN=(Media[2]+Media[3])/30;
+    if (distanciaP == 0 && distanciaN == 0){return -9999;}
+    return (distanciaP+distanciaN);
 }
-
-/*void VL53_sensors::distanceRead() {
-    int mediaVL=0;
-    for (uint8_t i = 0; i < number_sensor; i++)
-    {
-      
-      Serial.print("VL: ");
-      Serial.print(i);
-      for (int j=0; j<5; j++){
-        mediaVL = mediaVL + (sensor[i].readRangeSingleMillimeters() - offset[i]);  
-      }
-
-       dist[i] = mediaVL/5;
-       mediaVL = 0;
-      Serial.print("  dist: ");
-      Serial.print(dist[i]);
-     
-      Serial.print("   ");
-    }   
-    Serial.println("");
-}
-*/

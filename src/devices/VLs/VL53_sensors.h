@@ -24,11 +24,11 @@ public:
 
         // Com trash holder 
     #ifdef B1B_K_3_Led
-        int offset[NUM_SENSORS] = {-62, -23, 0, 0}; //             
+        int offset[NUM_SENSORS] = {45, 75, 55, 25}; //             
     #endif
 
     #ifdef B1B_K_1_Led
-        int offset[NUM_SENSORS] = {0, -31, 0, -20}; // 
+        int offset[NUM_SENSORS] = {20, 0, 0, 30}; // 
     #endif
 
     VL53L0X sensor[NUM_SENSORS];

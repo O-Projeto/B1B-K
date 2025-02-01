@@ -12,8 +12,8 @@
 
 ///////////////////////////////
 // TRASH HOLDER ///////////////
-#define B1B_K_1_Led        //
-//define B1B_K_3_Led          //
+// #define B1B_K_1_Led        //
+#define B1B_K_3_Led          //
 ///////////////////////////////
 
 class VL53_sensors
@@ -26,7 +26,7 @@ public:
     int dist[NUM_SENSORS];
         // Com trash holder 
     #ifdef B1B_K_3_Led
-        int offset[NUM_SENSORS] = {-20, 0, 0, -45}; //             
+        int offset[NUM_SENSORS] = {45, 75, 55, 25}; //             
     #endif
 
     #ifdef B1B_K_1_Led

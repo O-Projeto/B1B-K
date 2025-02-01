@@ -6,7 +6,7 @@
 #define teste_simples
 
 // Teste com freertos
-// #define teste_free
+ //#define teste_free
 
 // Treshold acima de 700 para ignorar coisas fora da arena
 // ler muito perto por 2s - Empurrar em 100 a mais por segundo, até parar de ver
@@ -30,7 +30,7 @@ int calculateDistance(int distances[]);
 
 
 void setup() {
-    Serial.begin(112500);
+    Serial.begin(115200);
     sensores.sensorsInit();
 
     // Cria a fila
@@ -54,6 +54,7 @@ void loop() {
 
     // Imprime a distância calculada armazenada na variável global
     printCalculatedDistance();
+    
 
     // Continue executando outras tarefas sem delay
 }
@@ -72,11 +73,15 @@ void readSensorsTask(void *pvParameters) {
 
 void updateCalculatedDistance() {
     int distances[NUM_SENSORS];
-
+    int calcula = 0;
     // Tenta ler da fila sem bloquear
     if (xQueueReceive(distanceQueue, &distances, 0)) {
         // Calcula o valor com base nas leituras dos sensores
-        calculatedDistance = calculateDistance(distances);
+        for (int i=0 ; i<5; i++){
+            calcula += calculateDistance(distances);
+        }
+        calculatedDistance = calcula/5;
+        calcula= 0;
     }
 }
 
@@ -86,25 +91,21 @@ void printCalculatedDistance() {
 }
 
 int calculateDistance(int distances[]) {
-    // Exemplo de cálculo: média das distâncias
-    // int sum = 0;
-    // for (int i = 0; i < NUM_SENSORS; i++) {
-    //     sum += distances[i];
-    // }
-    // return sum / NUM_SENSORS;
-
-	 int Media[NUM_SENSORS] = {25,5,-5,-25}, distanciaP=0, distanciaN=0;
+	 int Media[NUM_SENSORS] = {50,5,-5,-50}, distanciaP=0, distanciaN=0;
   for (int i=0; i<=NUM_SENSORS; i++){
-    if (distances[i]>300){distances[i]=0;}
+    // alterar para 300 pro segue mão de teste
+    // 500 na luta
+    if (distances[i]>400){distances[i]=0;}
     Media[i] = distances[i]*Media[i];
   }
-    distanciaP=(Media[0]+Media[1])/30;
-    distanciaN=(Media[2]+Media[3])/30;
-    if (distanciaP == 0 && distanciaN == 0){return -1;}
+    distanciaP=(Media[0]+Media[1])/55;
+    distanciaN=(Media[2]+Media[3])/55;
+    if (distanciaP == 0 && distanciaN == 0){return -9999;}
     return (distanciaP+distanciaN);
 
 
 }
+
 #endif
 
 

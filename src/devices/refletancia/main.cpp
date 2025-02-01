@@ -18,7 +18,7 @@ void setup(){
 
     rgt_front.init();
     lft_front.init();
-    Serial.begin(112500);
+    Serial.begin(115200);
 }
 
 
