@@ -3,11 +3,10 @@
 #include "H_bridge_TB6612.hpp"
 #include "controle_juiz.h"
 #include "led_rgb.h"
-#include "VL53_sensors.h"
+
 #include <Wire.h>
 #include "refletancia.h"
 #include "configs.h"
-
 
 float start_time = 0;
 float current_time = 0;
@@ -18,8 +17,8 @@ int last_ir = 0;
 // Objeto IR
 controle_juiz controle(IR_PIN);
 
-// Objeto VLs
-VL53_sensors sensores;
+BluetoothSerial SerialBT;
+String device_name = "ESP32-B1B-K";
 
 // Objeto Motores
 Motor rightMotor = Motor(AIN1, AIN2, PWMA, STBY, 1, 10);
@@ -49,14 +48,83 @@ int strategy = S0;
 bool bandeira_flag = false;
 
 void check_border();
-void attack();
 void printQR ();
-void printQRBT ();
 void strategy_selector();
 void hard_stop ();
 
 int left_vel = 0;
 int right_vel = 0;
+
+
+// #define VL_SENSOR
+#define JSUMO
+
+#ifdef VL_SENSOR
+#include "VL53_sensors.h"
+// Objeto VLs
+VL53_sensors sensores;
+void VL_attack()
+{
+  if(sensores.dist[1] <= 50 && sensores.dist[2] <= 50 && bandeira_flag == 0)
+  {
+    left_vel = 950;
+    right_vel = 950;
+  }
+  else if(sensores.dist[1] <= 100 && sensores.dist[2] <= 100 && bandeira_flag == 0)
+  {
+    left_vel = 700;
+    right_vel = 700;
+  }
+  else if(sensores.dist[1] <= 200 && sensores.dist[0] <= 100 && bandeira_flag == 0)
+  {
+    left_vel = 700;
+    right_vel = 450;
+  }
+  else if(sensores.dist[2] <= 200 && sensores.dist[3] <= 100 && bandeira_flag == 0)
+  {
+    left_vel = 450;
+    right_vel = 700;
+  }
+  else if (bandeira_flag)
+  {
+    if (sensores.dist[1] <= 50 && sensores.dist[2] <= 50 && sensores.dist[3] <= 80 && sensores.dist[0] <= 80)
+    {
+      left_vel = 950;
+      right_vel = 950;
+    }
+    else if(sensores.dist[1] <= 100 && sensores.dist[2] <= 100 && sensores.dist[3] <= 200 && sensores.dist[0] <= 200)
+    {
+      left_vel = 700;
+      right_vel = 700;
+    }
+  }
+}
+#endif
+
+#ifdef JSUMO
+#include "JS40F_JSumo.h"
+JS40F_JSumo sensores;
+void attack()
+{
+  if(sensores.sensorRead[2] && bandeira_flag == 0)
+  {
+    left_vel = 800;
+    right_vel = 800;
+  }
+  else if(sensores.sensorRead[1]  && sensores.sensorRead[0] && bandeira_flag == 0)
+  {
+    left_vel = 800;
+    right_vel = 300;
+  }
+  else if(sensores.sensorRead[3] && sensores.sensorRead[4] && bandeira_flag == 0)
+  {
+    left_vel = 300;
+    right_vel = 800;
+  }
+}
+#endif
+
+void printQRBT ();
 
 void setup() {
   Serial.begin(112500);
@@ -269,43 +337,6 @@ void printQRBT ()
   SerialBT.print(" ");
   SerialBT.print(border_esq);
   SerialBT.println("\t\t");
-}
-
-void attack()
-{
-  if(sensores.dist[1] <= 50 && sensores.dist[2] <= 50 && bandeira_flag == 0)
-  {
-    left_vel = 950;
-    right_vel = 950;
-  }
-  else if(sensores.dist[1] <= 100 && sensores.dist[2] <= 100 && bandeira_flag == 0)
-  {
-    left_vel = 700;
-    right_vel = 700;
-  }
-  else if(sensores.dist[1] <= 200 && sensores.dist[0] <= 100 && bandeira_flag == 0)
-  {
-    left_vel = 700;
-    right_vel = 450;
-  }
-  else if(sensores.dist[2] <= 200 && sensores.dist[3] <= 100 && bandeira_flag == 0)
-  {
-    left_vel = 450;
-    right_vel = 700;
-  }
-  else if (bandeira_flag)
-  {
-    if (sensores.dist[1] <= 50 && sensores.dist[2] <= 50 && sensores.dist[3] <= 80 && sensores.dist[0] <= 80)
-    {
-      left_vel = 950;
-      right_vel = 950;
-    }
-    else if(sensores.dist[1] <= 100 && sensores.dist[2] <= 100 && sensores.dist[3] <= 200 && sensores.dist[0] <= 200)
-    {
-      left_vel = 700;
-      right_vel = 700;
-    }
-  }
 }
 
 void strategy_selector()
