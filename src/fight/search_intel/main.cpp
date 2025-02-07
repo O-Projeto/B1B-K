@@ -321,11 +321,9 @@ void check_border()
   else {line_detected=0;}
   }
 
-
-
 int calculateDistance(int distances[]) {
   // joga pesos em cada sensor multiplicando
-	 int Media[NUM_SENSORS] = {50,5,-5,-50}, distanciaP=0, distanciaN=0;
+	int Media[NUM_SENSORS] = {50,5,-5,-50}, distanciaP=0, distanciaN=0;
   for (int i=0; i<=NUM_SENSORS; i++){
     // alterar para 300 pro segue mão de teste
     // 500 na luta
@@ -333,10 +331,10 @@ int calculateDistance(int distances[]) {
     Media[i] = distances[i]*Media[i];
   }
   // soma as partes positivas e negativas dividindo pela soma dos pesos
-    distanciaP=(Media[0]+Media[1])/55;
-    distanciaN=(Media[2]+Media[3])/55;
-    if (distanciaP == 0 && distanciaN == 0){return -9999;} // se tiver zerado então ta fora do raio do sensor 
-    return (distanciaP+distanciaN); // retorna a soma do lado positivo e negativo 
+  distanciaP=(Media[0]+Media[1])/55;
+  distanciaN=(Media[2]+Media[3])/55;
+  if (distanciaP == 0 && distanciaN == 0){return -9999;} // se tiver zerado então ta fora do raio do sensor 
+  return (distanciaP+distanciaN); // retorna a soma do lado positivo e negativo 
 
 
 }
@@ -376,8 +374,6 @@ void totalFrente()
   }
 }
 
-
-
 void strategy_selector()
 {
   if (!strategyStart){
@@ -387,19 +383,11 @@ void strategy_selector()
   if (!strategyDone){
     switch (strategy){
     case S0:
-      strategyTime = 100;
-      frenteUmPouco();
+      
       break;   
     case S1:
-    /*
-      strategyTime = 3000;
-      meiaLua();
-      break;
-      case S2:
-      strategyTime = 60000;
-      meiaLua();*/
-      vel_motor_1 = 1000;
-      vel_motor_2 = 1000;
+      strategyTime = 100;
+      frenteUmPouco();
       break;
     }
   }

@@ -1,63 +1,307 @@
+// a main inclui uma maquina de estados que definida pelo controle roda o loop (escolha da estrategia e comandos) 
+
+/*Verificar qual b1bk esta sendo usada para setar os trash-holds*/
+
+// bibliotecas
 #include <Arduino.h>
-#include <BluetoothSerial.h>
+#include "config.hpp"
 #include "H_bridge_TB6612.hpp"
-#include "controle_juiz.h"
-#include "led_rgb.h"
-
-#include <Wire.h>
+//#include <BluetoothSerial.h>
+//#include "VL53_sensors.hpp"
+//#include <Wire.h>
+#include "controle_juiz.hpp"
 #include "refletancia.h"
-#include "configs.h"
+#include "led_rgb.h"
+#include "JS40F_JSumo.h"
 
-float start_time = 0;
-float current_time = 0;
 
-int read_ir = -1;
-int last_ir = 0;
+// inicialização dos objetos
+//VL53_sensors sensores;
+JS40F_JSumo sensor;
 
-// Objeto IR
-controle_juiz controle(IR_PIN);
+// Handle para a fila
+QueueHandle_t distanceQueue;
 
-BluetoothSerial SerialBT;
-String device_name = "ESP32-B1B-K";
+controle_juiz controle_sony(34);
 
-// Objeto Motores
-Motor rightMotor = Motor(AIN1, AIN2, PWMA, STBY, 1, 10);
-Motor leftMotor = Motor(BIN1, BIN2, PWMB, STBY, 2, 10);
+refletancia qr_dir(qrDir, 50);
+refletancia qr_esq(qrEsq, 50); // rcx era entre 50 e 100
 
-// Objeto led
 led_rgb LED;
 
-// Objeto QR
-refletancia qr_dir(qrDir, 3700);
-refletancia qr_esq(qrEsq, 3700);
+Motor motor1 = Motor(AIN1, AIN2, PWMA, STBY, offsetA, 10);
+Motor motor2 = Motor(BIN1, BIN2, PWMB, STBY, offsetB, 10);
 
+// Variável global para armazenar o valor calculado
+int calculatedDistance = 0;
+
+// variaveis 
 float  read_sensor_dir = 0;
 float read_sensor_esq = 0; 
 bool border_dir, border_esq; 
 int last_line_detected = 0;
 int line_detected = 0;
-int backwards = 0;
+float start_time = 0;
+float current_time = 0;
+float tempoRe=0;
+bool flagRe= 0;
+bool prioridadeAtaque = 0;
+bool bandeira_flag = 0;
 
+int read_ir = -1;
+int last_ir = 0;
+
+int vel_motor_1;
+int vel_motor_2;
+
+int mediaCentro, lastMediaCentro=10000;
+
+int strategyDone=0;
+int strategyStart=0;
+float start_timeStrategy = 0;
+int strategyTime = 0;
+int start_timeFrente=0,frenteTime=1000, enemyfront= 0, startFrente_flag = 0; 
+
+// search
+float start_timeSearch = 0;
+bool flagInit = 0;
+int sensorRead[NUM_SENSORS];
+
+// Declaração das funções
+void drive(int mot1, int mot2);
+void search();
+void check_border();
+void re();
+void totalFrente();
+void meiaLua();
+void strategy_selector();
+void frenteUmPouco();
+
+void updateCalculatedDistance();
+void readSensorsTask(void *pvParameters);
+
+// definição das estrategias por nome (???)
 enum {
   S0, 
   S1,
   S2, 
-  AFTER_ATTACK
 };
-int strategy = S0;
-bool bandeira_flag = false;
-
-void check_border();
-void printQR ();
-void strategy_selector();
-void hard_stop ();
-
-int left_vel = 0;
-int right_vel = 0;
-
+int strategy; // ????
 
 // #define VL_SENSOR
 #define JSUMO
+
+void setup() {
+ 
+   // Cria a fila
+   distanceQueue = xQueueCreate(10, sizeof(int) * NUM_SENSORS);
+
+   // inicialização dos sensores, controles e led
+   Serial.begin(112500);
+   sensor.sensorsInit();
+   controle_sony.init();
+   LED.init();
+   LED.set(AZUL);
+   delay(1000);
+   LED.set(0);
+ 
+   // Cria a tarefa no Core 1 para ler as distâncias dos sensores
+   xTaskCreatePinnedToCore(
+       readSensorsTask,  // Função da tarefa
+       "ReadSensorsTask",  // Nome da tarefa
+       2048,  // Tamanho da pilha
+       NULL,  // Parâmetro da tarefa
+       2,  // Prioridade da tarefa
+       NULL,  // Handle da tarefa
+       0  // Core
+   );
+}
+
+void loop() {
+ // leitura do controle e filtro 
+ read_ir = controle_sony.read();
+ if (last_ir == TWO && (read_ir != TREE)){read_ir = TWO;}
+ else if (last_ir == TREE){read_ir = TREE;}
+
+ // leitura qr e teste de borda
+ read_sensor_dir = qr_dir.read();
+ read_sensor_esq = qr_esq.read();
+ border_dir = qr_dir.detect_border();
+ border_esq = qr_esq.detect_border();
+
+ switch (read_ir){
+ case ONE:
+     last_ir = ONE;
+     LED.fill(VERDE);
+     start_time = millis();
+     break;
+
+ case TWO: // caso loop padrão 
+   // sensores.distanceRead();
+   strategy_selector();
+   check_border();
+   re();
+   if (strategyDone){// se a estratégia estiver feita o código padrão volta ao normal 
+   //updateCalculatedDistance();
+   search();
+   }
+   drive(vel_motor_1,vel_motor_2); //unico lugar onde manda velocidade pros motores
+   last_ir = TWO;
+   break;
+ case TREE: //reinicializa tudo (aparentemente não pode por regra do sumo)
+   drive(0,0);
+   delay(10);
+   LED.set(VERMELHO);
+   tempoRe = 0;
+   flagRe = 0;
+   last_ir = TREE;
+   strategyStart = 0;
+   strategyDone=0;
+   lastMediaCentro = 0;
+   enemyfront = 0;
+   break;
+ case FOUR:
+   strategy = S0;
+   last_ir = FOUR;
+   LED.fill(MAGENTA);
+ break;
+ case FIVE:
+   strategy = S1;
+   last_ir = FIVE;
+   LED.fill(MAGENTA);
+ break;
+ case SIX:
+   prioridadeAtaque = 1;
+   LED.fill(BRANCO);
+   last_ir = SIX;
+ break;
+ default:
+ break;
+}
+  read_ir = controle_sony.read();
+}
+void drive(int mot1, int mot2){
+   motor1.drive(mot1);
+   motor2.drive(mot2);
+}  
+
+void check_border()
+{
+  if (line_detected != last_line_detected) // testa pra caso esteja realmente vendo a linha
+  {
+    start_time = millis();
+  }
+    last_line_detected = line_detected; 
+  if (border_dir || border_esq){ // se viu qualquer borda inicializa as variaveis pra entrar na preferencia da ré e ter 
+  // "tempo" de arrumar
+    tempoRe = 200;
+    line_detected = 1;
+    flagRe = 1;
+  }
+  else {line_detected=0;}
+  }
+ 
+void re(){
+    current_time = millis();
+    if(current_time - start_time < tempoRe && flagRe){
+      // se o tempo de ré não tiver passado ele ajeita o robo e volta reto
+      if (border_dir && border_esq){
+        tempoRe = 300;
+        vel_motor_1 = -700;
+        vel_motor_2 = -700;
+      }else if (border_dir){
+        tempoRe = 300;
+        vel_motor_1 = -200;
+        vel_motor_2 = -800;
+      }else if (border_esq){
+        tempoRe = 300;
+        vel_motor_1 = -800;
+        vel_motor_2 = -200;
+      }else{
+        vel_motor_1 = -700;
+        vel_motor_2 = -700;
+      }
+    } else{ // zera as variaveis  
+        tempoRe = 0;
+        flagRe = 0;
+    }
+}
+  
+void meiaLua()
+  { //estratégia que gira em meia lua por certo tempo
+    current_time = millis();
+    if (current_time - start_timeStrategy <= strategyTime){
+    vel_motor_1 = 1000;
+    vel_motor_2 = 600;
+    } else {
+    strategyDone = 1;
+    }
+  }
+  
+void frenteUmPouco()
+{ // vai pra frente por um tempo estimulado
+  current_time = millis();
+  if (current_time - start_timeStrategy <= strategyTime){
+  vel_motor_1 = 400;
+  vel_motor_2 = 400;
+  } else {
+  strategyDone = 1;
+  }
+
+}
+
+void totalFrente()
+{ 
+  if(!startFrente_flag)
+    start_timeFrente = millis ();
+  startFrente_flag = 1;
+  if (millis() - start_timeFrente >= frenteTime){
+    vel_motor_1 = 1000;
+    vel_motor_2 = 1000;
+  }
+}
+
+void strategy_selector()
+{
+  if (!strategyStart){
+      start_timeStrategy = millis();
+      strategyStart = 1;
+      }
+  if (!strategyDone){
+    switch (strategy){
+    case S0:
+      
+      break;   
+    case S1:
+      strategyTime = 100;
+      frenteUmPouco();
+      break;
+    }
+  }
+} // 
+void readSensorsTask(void *pvParameters) {
+  int distances[NUM_SENSORS];
+  while (1) {
+      sensor.distanceRead();
+      for (int i = 0; i < NUM_SENSORS; i++) {
+        distances[i] = sensor.sensorRead[i];
+      // Envia as distâncias para a fila sem bloquear
+      xQueueSendFromISR(distanceQueue, &distances, NULL);
+  }
+}
+}
+
+void updateCalculatedDistance() {
+  int distances[NUM_SENSORS];
+  // Tenta ler da fila sem bloquear
+  if (xQueueReceive(distanceQueue, &distances, 0)) {
+      // Calcula o valor com base nas leituras dos sensores
+    //  calculatedDistance = calculateDistance(distances);
+    for (int i = 0; i < NUM_SENSORS; i++) {
+       sensorRead[i] = distances[i] ;
+}
+  }
+}
 
 #ifdef VL_SENSOR
 #include "VL53_sensors.h"
@@ -67,35 +311,35 @@ void VL_attack()
 {
   if(sensores.dist[1] <= 50 && sensores.dist[2] <= 50 && bandeira_flag == 0)
   {
-    left_vel = 950;
-    right_vel = 950;
+    vel_motor_1 = 950;
+    vel_motor_2 = 950;
   }
   else if(sensores.dist[1] <= 100 && sensores.dist[2] <= 100 && bandeira_flag == 0)
   {
-    left_vel = 700;
-    right_vel = 700;
+    vel_motor_1 = 700;
+    vel_motor_2 = 700;
   }
   else if(sensores.dist[1] <= 200 && sensores.dist[0] <= 100 && bandeira_flag == 0)
   {
-    left_vel = 700;
-    right_vel = 450;
+    vel_motor_1 = 700;
+    vel_motor_2 = 450;
   }
   else if(sensores.dist[2] <= 200 && sensores.dist[3] <= 100 && bandeira_flag == 0)
   {
-    left_vel = 450;
-    right_vel = 700;
+    vel_motor_1 = 450;
+    vel_motor_2 = 700;
   }
   else if (bandeira_flag)
   {
     if (sensores.dist[1] <= 50 && sensores.dist[2] <= 50 && sensores.dist[3] <= 80 && sensores.dist[0] <= 80)
     {
-      left_vel = 950;
-      right_vel = 950;
+      vel_motor_1 = 950;
+      vel_motor_2 = 950;
     }
     else if(sensores.dist[1] <= 100 && sensores.dist[2] <= 100 && sensores.dist[3] <= 200 && sensores.dist[0] <= 200)
     {
-      left_vel = 700;
-      right_vel = 700;
+      vel_motor_1 = 700;
+      vel_motor_2 = 700;
     }
   }
 }
@@ -104,276 +348,32 @@ void VL_attack()
 #ifdef JSUMO
 #include "JS40F_JSumo.h"
 JS40F_JSumo sensores;
-void attack()
+void search()
 {
-  if(sensores.sensorRead[2] && bandeira_flag == 0)
-  {
-    left_vel = 800;
-    right_vel = 800;
-  }
-  else if(sensores.sensorRead[1]  && sensores.sensorRead[0] && bandeira_flag == 0)
-  {
-    left_vel = 800;
-    right_vel = 300;
-  }
-  else if(sensores.sensorRead[3] && sensores.sensorRead[4] && bandeira_flag == 0)
-  {
-    left_vel = 300;
-    right_vel = 800;
+  if (sensor.sensorRead[0] && bandeira_flag == 0){
+    vel_motor_1 = 00;
+    vel_motor_2 = 00;
+  } else if(sensor.sensorRead[0]&& sensor.sensorRead[1] && bandeira_flag == 0){
+    vel_motor_1 = 00;
+    vel_motor_2 = 00;
+  } else if (sensor.sensorRead[1]  && sensor.sensorRead[2] && bandeira_flag == 0){
+    vel_motor_1 = 00;
+    vel_motor_2 = 00;
+  } else if (sensor.sensorRead[2] && bandeira_flag == 0){
+    vel_motor_1 = 00;
+    vel_motor_2 = 00;
+  }else if(sensor.sensorRead[1]  && sensor.sensorRead[2] && sensor.sensorRead[3] && bandeira_flag == 0){
+    vel_motor_1 = 800;
+    vel_motor_2 = 800;
+  } else if(sensor.sensorRead[2] && sensor.sensorRead[3] && bandeira_flag == 0){
+    vel_motor_1 = 300;
+    vel_motor_2 = 800;
+  } else if(sensor.sensorRead[3] && sensor.sensorRead[4] && bandeira_flag == 0){
+    vel_motor_1 = 300;
+    vel_motor_2 = 800;
+  } else if (sensor.sensorRead[4] && bandeira_flag == 0){
+    vel_motor_1 = 00;
+    vel_motor_2 = 00;
   }
 }
 #endif
-
-void printQRBT ();
-
-void setup() {
-  Serial.begin(112500);
-  SerialBT.begin(device_name); //Bluetooth device name
-  LED.init();
-  controle.init();
-  LED.set(AZUL);
-  delay(1000);
-  LED.set(0);
-  sensores.sensorsInit();
-}
-
-void loop() {
-  read_ir = controle.read();
-  if (last_ir == TWO && (read_ir == ONE || read_ir == -1))
-  {
-    read_ir = TWO;
-  }
-  
-  read_sensor_dir = qr_dir.read();
-  read_sensor_esq = qr_esq.read();
-  border_dir = qr_dir.detect_border();
-  border_esq = qr_esq.detect_border();
-  // printQRBT();
-
-  // Serial.print("Strategy: ");
-  // Serial.println(strategy);
-
-  // SerialBT.print("left_vel: ");
-  // SerialBT.println(left_vel);
-  // SerialBT.print("right_vel: ");
-  // SerialBT.println(right_vel);
-
-  switch (read_ir) {
-    case ONE:
-      //leftMotor.drive(255);
-      //rightMotor.drive(-255);
-      last_ir = ONE;
-      LED.fill(VERDE);
-      start_time = millis();
-      break;
-    
-    case TWO:
-      current_time = millis();
-      check_border();
-      sensores.distanceRead();
-      // sensores.printDistancesBT();
-      check_border();
-      strategy_selector();
-      attack();
-      check_border();
-      leftMotor.drive(left_vel);
-      delay(10);
-      rightMotor.drive(right_vel);
-      delay(10);
-      if(line_detected != 1)
-        LED.set(MAGENTA);
-      last_ir = TWO;
-      break;
-
-    case TREE:
-      leftMotor.drive(0);
-      delay(10);
-      rightMotor.drive(0);
-      delay(10);
-      LED.set(VERMELHO);
-      last_ir = TREE;
-      start_time = millis();
-      break;
-    case BANDEIRA:
-      bandeira_flag = true;
-      LED.set(AMARELO);
-      last_ir = BANDEIRA;
-      start_time = millis();
-      break;
-    case FOUR:
-      strategy = S0;
-      // tempoPrevio = 0;
-      last_ir = FOUR;
-      LED.latch(200, AZUL);
-      start_time = millis();
-      break;
-    case FIVE:
-      strategy = S1;
-      LED.latch(200,VERMELHO);
-      last_ir = FIVE;
-      start_time = millis();
-      break;
-    case SIX:
-      strategy = S2;
-      LED.latch(200, LARANJA);
-      last_ir = SIX;
-      start_time = millis();
-      break;
-    default:
-      start_time = millis();
-      LED.set(0);
-      break;
-  }
-  read_ir = controle.read();
-}
-
-void check_border()
-{
-  if (line_detected != last_line_detected && backwards == 0)
-  {
-    start_time = millis();
-  }
-  last_line_detected = line_detected;
-  if (border_dir && border_esq)
-  {  
-    if (current_time - start_time < 800)
-    {
-      left_vel = -900;
-      right_vel = 900;
-      backwards = 1;
-    }
-    else
-    {
-      left_vel = 800;
-      right_vel = -300;
-      backwards = 0;
-    }  
-    // hard_stop (); // Comentar dps
-    LED.set(LARANJA);
-    line_detected = 1;
-  }
-  else if (border_dir)
-  {
-    if (current_time - start_time < 600)
-    {
-      left_vel = -900;
-      right_vel = 0;
-      backwards = 1;
-    }
-    else
-    {
-      left_vel = 300;
-      right_vel = 800;
-      backwards = 0;
-    }
-    // hard_stop (); // Comentar dps
-    LED.set(LARANJA);
-    line_detected = 1;
-  }
-  else if (border_esq)
-  {
-    if (current_time - start_time < 600)
-    {
-      left_vel = 0;
-      right_vel = -900;
-      backwards = 1;
-    }
-    else
-    {
-      left_vel = 800;
-      right_vel = 300;
-      backwards = 0;
-    }
-    // hard_stop (); // Comentar dps
-    LED.set(LARANJA);
-    line_detected = 1;
-  }
-  else
-  {  
-    line_detected = 0;
-    LED.set(MAGENTA);
-  }
-}
-
-void printQR ()
-{
-  Serial.print(" ");
-  Serial.print("read_sensor_dir:");
-  Serial.print(" ");
-  Serial.print(read_sensor_dir);
-  Serial.print(" ");
-  Serial.print("bool dir:");
-  Serial.print(" ");
-  Serial.print(border_dir);
-  Serial.println("\t\t");
-  Serial.print(" ");
-  Serial.print("read_sensor_esq");
-  Serial.print(" ");
-  Serial.print(read_sensor_esq);
-  Serial.print(" ");
-  Serial.print("bool esq:");
-  Serial.print(" ");
-  Serial.print(border_esq);
-  Serial.println("\t\t");
-}
-
-void printQRBT ()
-{
-  SerialBT.print(" ");
-  SerialBT.print("read_sensor_dir:");
-  SerialBT.print(" ");
-  SerialBT.print(read_sensor_dir);
-  SerialBT.print(" ");
-  SerialBT.print("bool dir:");
-  SerialBT.print(" ");
-  SerialBT.print(border_dir);
-  SerialBT.println("\t\t");
-  SerialBT.print(" ");
-  SerialBT.print("read_sensor_esq");
-  SerialBT.print(" ");
-  SerialBT.print(read_sensor_esq);
-  SerialBT.print(" ");
-  SerialBT.print("bool esq:");
-  SerialBT.print(" ");
-  SerialBT.print(border_esq);
-  SerialBT.println("\t\t");
-}
-
-void strategy_selector()
-{
-  current_time = millis();
-  if (strategy == S0)
-  {      
-    left_vel = 200;
-    right_vel = 200;
-  }
-  if (strategy == S1)
-  {
-      left_vel = 250;
-      right_vel = 200;
-  }
-  if (strategy == S2)
-  {
-    left_vel = 200;
-    right_vel = 250;
-  }
-  if (strategy == AFTER_ATTACK)
-  {
-    left_vel = 400;
-    right_vel = 200;
-  }
-  // else
-  // {
-  //   left_vel = 0;
-  //   right_vel = 0;
-  // }
-}
-void hard_stop ()
-{
-  leftMotor.drive(0); // Comentar dps
-  delay(10); // Comentar dps
-  rightMotor.drive(0); // Comentar dps
-  delay(10); // Comentar dps
-  left_vel = 0; // Comentar dps
-  right_vel = 0; // Comentar dps
-}
