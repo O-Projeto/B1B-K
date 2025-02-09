@@ -12,4 +12,5 @@ void loop()
 {
 	sensor.distanceRead();
 	sensor.printDistances();
+	delay(100);
 }

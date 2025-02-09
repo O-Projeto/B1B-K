@@ -14,7 +14,7 @@ int last_button_pressed = 300;
 int button_pressed = 300;
 
 void setup() { // inicializa o controle 
-  Serial.begin(112500);
+  Serial.begin(115200);
   controle_sony.init();
 }
 void loop() {

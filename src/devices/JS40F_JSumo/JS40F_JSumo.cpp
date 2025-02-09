@@ -18,11 +18,11 @@ void JS40F_JSumo::distanceRead()
 void JS40F_JSumo::printDistances()
 {
     for (int i = 0; i< number_sensor; i++){
-        Serial.print("Sensor ");
         Serial.print(i);
-        Serial.print(" esta: ");
-        Serial.print("");
+        Serial.print(": ");
+        Serial.print("  ");
         Serial.print(sensorRead[i]);
-        Serial.println("");
+        Serial.print("  ");
     }
+    Serial.println("");
 }
