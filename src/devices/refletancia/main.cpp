@@ -11,8 +11,8 @@ float read_sensor_lft;
 bool border_rgt;
 bool border_lft;
 
-refletancia rgt_front(rgt_front_pin, 2700);
-refletancia lft_front(lft_front_pin, 2700);
+refletancia rgt_front(rgt_front_pin, 50);
+refletancia lft_front(lft_front_pin, 50);
 
 void setup(){
 

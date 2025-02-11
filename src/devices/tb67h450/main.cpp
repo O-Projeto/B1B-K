@@ -104,8 +104,8 @@ void loop() {
  motor1.drive(0);
  motor2.drive(500);
  delay(5000);
- motor1.drive(500);
- motor2.drive(500);
+ motor1.drive(1000);
+ motor2.drive(1000);
  delay(5000);
  motor1.drive(-500);
  motor2.drive(0);

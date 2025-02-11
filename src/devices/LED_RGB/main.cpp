@@ -19,7 +19,7 @@ void setup() {
 
 // the loop routine runs over and over again forever:
 void loop() {
-     //LED.blink(1000,AZUL);
+     LED.blink(1000,AZUL);
      digitalWrite(2, HIGH);
      delay(500);
      digitalWrite(2, LOW);
