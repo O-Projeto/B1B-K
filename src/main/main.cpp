@@ -5,7 +5,7 @@
 // bibliotecas
 #include <Arduino.h>
 #include "config.hpp"
-#include "H_bridge_TB6612.hpp"
+//#include "H_bridge_TB6612.hpp"
 //#include <BluetoothSerial.h>
 //#include "VL53_sensors.hpp"
 //#include <Wire.h>
@@ -13,7 +13,7 @@
 #include "refletancia.h"
 #include "led_rgb.h"
 #include "JS40F_JSumo.h"
-
+#include "Motor450.h"
 
 // inicialização dos objetos
 //VL53_sensors sensores;
@@ -29,8 +29,8 @@ refletancia qr_esq(qrEsq, 50); // rcx era entre 50 e 100
 
 led_rgb LED;
 
-Motor motor1 = Motor(AIN1, AIN2, PWMA, STBY, offsetA, 10);
-Motor motor2 = Motor(BIN1, BIN2, PWMB, STBY, offsetB, 10);
+Motor450 motor1 = Motor450(AIN1, AIN2, offsetA, offsetB,  10);
+Motor450 motor2 = Motor450(BIN1, BIN2, offsetC, offsetD,  10);
 
 // Variável global para armazenar o valor calculado
 int calculatedDistance = 0;
@@ -360,11 +360,12 @@ void search()
     vel_motor_1 = 00;
     vel_motor_2 = 00;
   } else if (sensor.sensorRead[2] && bandeira_flag == 0){
-    vel_motor_1 = 00;
-    vel_motor_2 = 00;
+    vel_motor_1 = 800;
+    vel_motor_2 = 800;
   }else if(sensor.sensorRead[1]  && sensor.sensorRead[2] && sensor.sensorRead[3] && bandeira_flag == 0){
     vel_motor_1 = 800;
     vel_motor_2 = 800;
+    totalFrente();
   } else if(sensor.sensorRead[2] && sensor.sensorRead[3] && bandeira_flag == 0){
     vel_motor_1 = 300;
     vel_motor_2 = 800;

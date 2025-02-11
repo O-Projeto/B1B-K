@@ -6,10 +6,7 @@
 #define AIN2 33
 #define BIN1 27
 #define BIN2 14
-#define PWMA 32
-#define PWMB 13
-//#define STBY 26
-const int STBY=26;
+#define SERVO 13
 
 #define ONE 0
 #define TWO 1
@@ -22,6 +19,8 @@ const int STBY=26;
 // line up with function names like forward.  Value can be 1 or -1
 const int offsetA = 1;
 const int offsetB = 2;
+const int offsetC = 3;
+const int offsetD = 4;
 
 #define qrDir 39
 #define qrEsq 36
