@@ -14,12 +14,17 @@ led_rgb LED;
 // the setup routine runs once when you press reset:
 void setup() {
   LED.init();
+  pinMode(2, OUTPUT);
 }
 
 // the loop routine runs over and over again forever:
 void loop() {
-//  LED.blink(1000,AZUL);
+     //LED.blink(1000,AZUL);
+     digitalWrite(2, HIGH);
+     delay(500);
+     digitalWrite(2, LOW);
+     delay(500);
    
-    LED.latch(1000,MAGENTA);
+    // LED.latch(1000,MAGENTA);
  
 }

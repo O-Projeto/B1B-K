@@ -3,7 +3,7 @@
 #pragma once
 
 
-#define NUMPIXELS 3
+#define NUMPIXELS 2
 #define RGB_PIN 23
 
 Adafruit_NeoPixel pixels(NUMPIXELS, RGB_PIN, NEO_GRB + NEO_KHZ800);
@@ -29,7 +29,7 @@ public:
 void led_rgb ::init(){
     //set motor
   pixels.begin(); // INITIALIZE NeoPixel strip object (REQUIRED)
-  pixels.setBrightness(100); // not so bright]
+  pixels.setBrightness(50); // not so bright]
   pixels.fill(0x000000);
   pixels.show();
   unsigned long start_time = millis();
