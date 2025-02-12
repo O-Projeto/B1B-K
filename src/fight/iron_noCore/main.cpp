@@ -62,6 +62,7 @@ int start_timeFrente=0,frenteTime=1000, enemyfront= 0, startFrente_flag = 0;
 float start_timeSearch = 0;
 bool flagInit = 0;
 int sensorRead[NUM_SENSORS];
+int lastRead[NUM_SENSORS] = {0,0,0,0,0};
 
 // Declaração das funções
 void drive(int mot1, int mot2);
@@ -171,32 +172,53 @@ void drive(int mot1, int mot2){
 
 void search()
 {
-  if(sensor.sensorRead[0] && sensor.sensorRead[1] && bandeira_flag == 0){
-    vel_motor_dir = 700;
-    vel_motor_esq = 300;
-    
-  } else if (sensor.sensorRead[0] && bandeira_flag == 0){
-    vel_motor_dir = 500;
-    vel_motor_esq = 200;
-  }else if(sensor.sensorRead[1]  && sensor.sensorRead[2] && sensor.sensorRead[3] && bandeira_flag == 0){
-    vel_motor_dir = 1000;
-    vel_motor_esq = 1000;
-    totalFrente();
-  } else if (sensor.sensorRead[1]  && sensor.sensorRead[2] && bandeira_flag == 0){
-    vel_motor_dir = 600;
-    vel_motor_esq = 200;
-  } else if(sensor.sensorRead[2] && sensor.sensorRead[3] && bandeira_flag == 0){
-    vel_motor_dir = 200;
-    vel_motor_esq = 600;
-  } else if (sensor.sensorRead[2] && bandeira_flag == 0){
-    vel_motor_dir = 800;
-    vel_motor_esq = 800;
-  }  else if(sensor.sensorRead[3] && sensor.sensorRead[4] && bandeira_flag == 0){
-    vel_motor_dir = 200;
-    vel_motor_esq = 500;
-  } else if (sensor.sensorRead[4] && bandeira_flag == 0){
-    vel_motor_dir = 300;
-    vel_motor_esq = 700;
+  if (!sensor.sensorRead[0] && !sensor.sensorRead[1]  && !sensor.sensorRead[2] && !sensor.sensorRead[3] && !sensor.sensorRead[4]){
+    if (lastRead[0] || lastRead[1]){
+        vel_motor_dir = -500;
+        vel_motor_esq = 500;
+    } else if (lastRead[3] || lastRead[4]){
+      vel_motor_dir = 500;
+      vel_motor_esq = -500;
+    } else if (lastRead[2]){
+      vel_motor_dir = 400;
+      vel_motor_esq = 400;
+    } else if (!lastRead[0] && !lastRead[1] && !lastRead[2] && !lastRead[3] && !lastRead[4]){
+      vel_motor_dir = 400;
+      vel_motor_esq = 400;
+    }
+  }
+  else
+  {
+    if (sensor.sensorRead[0] && sensor.sensorRead[1] && bandeira_flag == 0){
+      vel_motor_dir = 300;
+      vel_motor_esq = 700;
+    } else if (sensor.sensorRead[0] && bandeira_flag == 0){
+      vel_motor_dir = -600;
+      vel_motor_esq = 600;
+    }else if (sensor.sensorRead[1] && sensor.sensorRead[2] && sensor.sensorRead[3] && bandeira_flag == 0){
+      vel_motor_dir = 1000;
+      vel_motor_esq = 1000;
+      totalFrente();
+    }else if (sensor.sensorRead[1] && sensor.sensorRead[2] && bandeira_flag == 0){
+      vel_motor_dir = 500;
+      vel_motor_esq = 700;
+    }else if (sensor.sensorRead[2] && sensor.sensorRead[3] && bandeira_flag == 0){
+      vel_motor_dir = 700;
+      vel_motor_esq = 500;
+    }else if (sensor.sensorRead[2] && bandeira_flag == 0){
+      vel_motor_dir = 800;
+      vel_motor_esq = 800;
+    }else if (sensor.sensorRead[3] && sensor.sensorRead[4] && bandeira_flag == 0){
+      vel_motor_dir = 700;
+      vel_motor_esq = 300;
+    } else if (sensor.sensorRead[4] && bandeira_flag == 0){
+      vel_motor_dir = 600;
+      vel_motor_esq = -600;
+    }
+    // loop att leastread
+    for (int i=0; i< NUM_SENSORS; i++){
+      lastRead[i]= sensor.sensorRead[i];
+    }
   }
 }
 void check_border()
