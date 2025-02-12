@@ -104,11 +104,11 @@ void setup() {
    xTaskCreatePinnedToCore(
        readSensorsTask,  // Função da tarefa
        "ReadSensorsTask",  // Nome da tarefa
-       2048,  // Tamanho da pilha
+       4096,  // Tamanho da pilha
        NULL,  // Parâmetro da tarefa
-       2,  // Prioridade da tarefa
+       1,  // Prioridade da tarefa
        NULL,  // Handle da tarefa
-       0  // Core
+       1  // Core
    );
 }
 
