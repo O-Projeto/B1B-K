@@ -190,7 +190,7 @@ void search()
   else
   {
     if (sensor.sensorRead[0] && sensor.sensorRead[1] && bandeira_flag == 0){
-      vel_motor_dir = 300;
+      vel_motor_dir = 200;
       vel_motor_esq = 700;
     } else if (sensor.sensorRead[0] && bandeira_flag == 0){
       vel_motor_dir = -600;
@@ -202,6 +202,9 @@ void search()
     }else if (sensor.sensorRead[1] && sensor.sensorRead[2] && bandeira_flag == 0){
       vel_motor_dir = 500;
       vel_motor_esq = 700;
+    } else if (sensor.sensorRead[1] && bandeira_flag == 0){
+      vel_motor_dir = 500;
+      vel_motor_esq = 800;
     }else if (sensor.sensorRead[2] && sensor.sensorRead[3] && bandeira_flag == 0){
       vel_motor_dir = 700;
       vel_motor_esq = 500;
@@ -210,7 +213,10 @@ void search()
       vel_motor_esq = 800;
     }else if (sensor.sensorRead[3] && sensor.sensorRead[4] && bandeira_flag == 0){
       vel_motor_dir = 700;
-      vel_motor_esq = 300;
+      vel_motor_esq = 200;
+    } else if (sensor.sensorRead[3] && bandeira_flag == 0){
+      vel_motor_dir = 800;
+      vel_motor_esq = 500;
     } else if (sensor.sensorRead[4] && bandeira_flag == 0){
       vel_motor_dir = 600;
       vel_motor_esq = -600;
