@@ -162,9 +162,6 @@ void loop() {
   read_ir = controle_sony.read();
 }
 void drive(int mot1, int mot2){
-  Serial.print("velocidade motores: ");
-  Serial.print(mot1);
-  Serial.println(mot2);
    motordir.drive(mot1);
    motoresq.drive(mot2);
 }  
