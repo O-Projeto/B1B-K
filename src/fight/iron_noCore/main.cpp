@@ -61,7 +61,7 @@ int start_timeFrente=0,frenteTime=1000, enemyfront= 0, startFrente_flag = 0;
 // search
 float start_timeSearch = 0;
 bool flagInit = 0;
-int sensorRead[NUM_SENSORS];
+int sensorRead[NUM_SENSORS]  = {0,0,0,0,0};
 int lastRead[NUM_SENSORS] = {0,0,0,0,0};
 
 // Declaração das funções
@@ -211,12 +211,12 @@ void search()
     }else if (sensor.sensorRead[3] && sensor.sensorRead[4] && bandeira_flag == 0){
       vel_motor_dir = 700;
       vel_motor_esq = 200;
-    } else if (sensor.sensorRead[3] && bandeira_flag == 0){
-      vel_motor_dir = 800;
-      vel_motor_esq = 500;
     } else if (sensor.sensorRead[4] && bandeira_flag == 0){
       vel_motor_dir = 600;
       vel_motor_esq = -600;
+    } else if (sensor.sensorRead[3] && bandeira_flag == 0){
+      vel_motor_dir = 800;
+      vel_motor_esq = 500;
     }
     // loop att leastread
     for (int i=0; i< NUM_SENSORS; i++){
