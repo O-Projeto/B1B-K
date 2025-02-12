@@ -12,21 +12,21 @@
             "type": "platformio-debug",
             "request": "launch",
             "name": "PIO Debug",
-            "executable": "c:/Users/pastu/OneDrive/Documentos/b1bk/B1B-K/.pio/build/Main/firmware.elf",
-            "projectEnvName": "Main",
+            "executable": "c:/Users/pastu/OneDrive/Documentos/b1bk/B1B-K/.pio/build/iron_noCore/firmware.elf",
+            "projectEnvName": "iron_noCore",
             "toolchainBinDir": "C:/Users/pastu/.platformio/packages/toolchain-xtensa-esp32/bin",
             "internalConsoleOptions": "openOnSessionStart",
             "preLaunchTask": {
                 "type": "PlatformIO",
-                "task": "Pre-Debug (Main)"
+                "task": "Pre-Debug (iron_noCore)"
             }
         },
         {
             "type": "platformio-debug",
             "request": "launch",
             "name": "PIO Debug (skip Pre-Debug)",
-            "executable": "c:/Users/pastu/OneDrive/Documentos/b1bk/B1B-K/.pio/build/Main/firmware.elf",
-            "projectEnvName": "Main",
+            "executable": "c:/Users/pastu/OneDrive/Documentos/b1bk/B1B-K/.pio/build/iron_noCore/firmware.elf",
+            "projectEnvName": "iron_noCore",
             "toolchainBinDir": "C:/Users/pastu/.platformio/packages/toolchain-xtensa-esp32/bin",
             "internalConsoleOptions": "openOnSessionStart"
         },
@@ -34,8 +34,8 @@
             "type": "platformio-debug",
             "request": "launch",
             "name": "PIO Debug (without uploading)",
-            "executable": "c:/Users/pastu/OneDrive/Documentos/b1bk/B1B-K/.pio/build/Main/firmware.elf",
-            "projectEnvName": "Main",
+            "executable": "c:/Users/pastu/OneDrive/Documentos/b1bk/B1B-K/.pio/build/iron_noCore/firmware.elf",
+            "projectEnvName": "iron_noCore",
             "toolchainBinDir": "C:/Users/pastu/.platformio/packages/toolchain-xtensa-esp32/bin",
             "internalConsoleOptions": "openOnSessionStart",
             "loadMode": "manual"

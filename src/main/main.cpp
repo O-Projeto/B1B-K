@@ -63,7 +63,7 @@ int start_timeFrente=0,frenteTime=1000, enemyfront= 0, startFrente_flag = 0;
 // search
 float start_timeSearch = 0;
 bool flagInit = 0;
-int sensorRead[NUM_SENSORS];
+int sensorRead[NUM_SENSORS] = {0,0,0,0,0};
 
 // Declaração das funções
 void drive(int mot1, int mot2);
@@ -137,7 +137,7 @@ void loop() {
    check_border();
    re();
    if (strategyDone){// se a estratégia estiver feita o código padrão volta ao normal 
-   //updateCalculatedDistance();
+   updateCalculatedDistance();
    search();
    }
    drive(vel_motor_dir,vel_motor_esq); //unico lugar onde manda velocidade pros motores
@@ -314,8 +314,9 @@ void readSensorsTask(void *pvParameters) {
       for (int i = 0; i < NUM_SENSORS; i++) {
         distances[i] = sensor.sensorRead[i];
       // Envia as distâncias para a fila sem bloquear
-      xQueueSendFromISR(distanceQueue, &distances, NULL);
+    
   }
+  xQueueSendFromISR(distanceQueue, &distances, NULL);
 }
 }
 

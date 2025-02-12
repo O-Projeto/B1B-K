@@ -19,8 +19,6 @@
 //VL53_sensors sensores;
 JS40F_JSumo sensor;
 
-// Handle para a fila
-QueueHandle_t distanceQueue;
 
 controle_juiz controle_sony(34);
 
@@ -87,10 +85,6 @@ enum {
 int strategy; // ????
 
 void setup() {
- 
-   // Cria a fila
-   distanceQueue = xQueueCreate(10, sizeof(int) * NUM_SENSORS);
-
    // inicialização dos sensores, controles e led
    Serial.begin(112500);
    sensor.sensorsInit();
@@ -99,17 +93,7 @@ void setup() {
    LED.set(AZUL);
    delay(1000);
    LED.set(0);
- 
-   // Cria a tarefa no Core 1 para ler as distâncias dos sensores
-   xTaskCreatePinnedToCore(
-       readSensorsTask,  // Função da tarefa
-       "ReadSensorsTask",  // Nome da tarefa
-       4096,  // Tamanho da pilha
-       NULL,  // Parâmetro da tarefa
-       1,  // Prioridade da tarefa
-       NULL,  // Handle da tarefa
-       1  // Core
-   );
+
 }
 
 void loop() {
@@ -124,6 +108,7 @@ void loop() {
  border_dir = qr_dir.detect_border();
  border_esq = qr_esq.detect_border();
 
+ sensor.distanceRead();
  switch (read_ir){
  case ONE:
      last_ir = ONE;
@@ -186,29 +171,29 @@ void drive(int mot1, int mot2){
 
 void search()
 {
-  if (sensorRead[0] && bandeira_flag == 0){
+  if (sensor.sensorRead[0] && bandeira_flag == 0){
     vel_motor_dir = 700;
     vel_motor_esq = 300;
-  } else if(sensorRead[0] && sensorRead[1] && bandeira_flag == 0){
+  } else if(sensor.sensorRead[0] && sensor.sensorRead[1] && bandeira_flag == 0){
     vel_motor_dir = 500;
     vel_motor_esq = 200;
-  } else if (sensorRead[1]  && sensorRead[2] && bandeira_flag == 0){
+  } else if (sensor.sensorRead[1]  && sensor.sensorRead[2] && bandeira_flag == 0){
     vel_motor_dir = 500;
     vel_motor_esq = 200;
-  } else if (sensorRead[2] && bandeira_flag == 0){
+  } else if (sensor.sensorRead[2] && bandeira_flag == 0){
     vel_motor_dir = 800;
     vel_motor_esq = 800;
-  }else if(sensorRead[1]  && sensorRead[2] && sensorRead[3] && bandeira_flag == 0){
+  }else if(sensor.sensorRead[1]  && sensor.sensorRead[2] && sensor.sensorRead[3] && bandeira_flag == 0){
     vel_motor_dir = 1000;
     vel_motor_esq = 1000;
     totalFrente();
-  } else if(sensorRead[2] && sensorRead[3] && bandeira_flag == 0){
+  } else if(sensor.sensorRead[2] && sensor.sensorRead[3] && bandeira_flag == 0){
     vel_motor_dir = 200;
     vel_motor_esq = 500;
-  } else if(sensorRead[3] && sensorRead[4] && bandeira_flag == 0){
+  } else if(sensor.sensorRead[3] && sensor.sensorRead[4] && bandeira_flag == 0){
     vel_motor_dir = 200;
     vel_motor_esq = 500;
-  } else if (sensorRead[4] && bandeira_flag == 0){
+  } else if (sensor.sensorRead[4] && bandeira_flag == 0){
     vel_motor_dir = 300;
     vel_motor_esq = 700;
   }
@@ -307,26 +292,3 @@ void strategy_selector()
     }
   }
 } // 
-void readSensorsTask(void *pvParameters) {
-  int distances[NUM_SENSORS];
-  while (1) {
-      sensor.distanceRead();
-      for (int i = 0; i < NUM_SENSORS; i++) {
-        distances[i] = sensor.sensorRead[i];
-      // Envia as distâncias para a fila sem bloquear
-      xQueueSendFromISR(distanceQueue, &distances, NULL);
-  }
-}
-}
-
-void updateCalculatedDistance() {
-  int distances[NUM_SENSORS];
-  // Tenta ler da fila sem bloquear
-  if (xQueueReceive(distanceQueue, &distances, 0)) {
-      // Calcula o valor com base nas leituras dos sensores
-    //  calculatedDistance = calculateDistance(distances);
-    for (int i = 0; i < NUM_SENSORS; i++) {
-       sensorRead[i] = distances[i] ;
-}
-  }
-}
