@@ -5,15 +5,15 @@
 // bibliotecas
 #include <Arduino.h>
 #include "config.hpp"
-//#include "H_bridge_TB6612.hpp"
-//#include <BluetoothSerial.h>
-//#include "VL53_sensors.hpp"
-//#include <Wire.h>
 #include "controle_juiz.hpp"
 #include "refletancia.h"
 #include "led_rgb.h"
 #include "JS40F_JSumo.h"
 #include "Motor450.h"
+//#include "H_bridge_TB6612.hpp"
+//#include <BluetoothSerial.h>
+//#include "VL53_sensors.hpp"
+//#include <Wire.h>
 
 // inicialização dos objetos
 //VL53_sensors sensores;
@@ -32,8 +32,6 @@ led_rgb LED;
 Motor450 motor1 = Motor450(AIN1, AIN2, offsetA, offsetB,  10);
 Motor450 motor2 = Motor450(BIN1, BIN2, offsetC, offsetD,  10);
 
-// Variável global para armazenar o valor calculado
-int calculatedDistance = 0;
 
 // variaveis 
 float  read_sensor_dir = 0;
