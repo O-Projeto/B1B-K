@@ -47,8 +47,8 @@ bool bandeira_flag = 0;
 int read_ir = -1;
 int last_ir = 0;
 
-int vel_motor_dir;
-int vel_motor_esq;
+int vel_motor_dir = 0;
+int vel_motor_esq = 0;
 
 int mediaCentro, lastMediaCentro=10000;
 
@@ -61,7 +61,7 @@ int start_timeFrente=0,frenteTime=1000, enemyfront= 0, startFrente_flag = 0;
 // search
 float start_timeSearch = 0;
 bool flagInit = 0;
-int sensorRead[NUM_SENSORS]  = {0,0,0,0,0};
+int sensorRead[NUM_SENSORS];
 int lastRead[NUM_SENSORS] = {0,0,0,0,0};
 
 // Declaração das funções
@@ -90,6 +90,8 @@ void setup() {
    Serial.begin(112500);
    sensor.sensorsInit();
    controle_sony.init();
+   motordir.stop();
+   motoresq.stop();
    LED.init();
    LED.set(AZUL);
    delay(1000);
@@ -169,6 +171,7 @@ void drive(int mot1, int mot2){
 
 void search()
 {
+  if (!flagRe){
   if (!sensor.sensorRead[0] && !sensor.sensorRead[1]  && !sensor.sensorRead[2] && !sensor.sensorRead[3] && !sensor.sensorRead[4]){
     if (lastRead[0] || lastRead[1]){
         vel_motor_dir = -500;
@@ -187,7 +190,7 @@ void search()
   else
   {
     if (sensor.sensorRead[0] && sensor.sensorRead[1] && bandeira_flag == 0){
-      vel_motor_dir = 200;
+      vel_motor_dir = 300;
       vel_motor_esq = 700;
     } else if (sensor.sensorRead[0] && bandeira_flag == 0){
       vel_motor_dir = -600;
@@ -199,9 +202,6 @@ void search()
     }else if (sensor.sensorRead[1] && sensor.sensorRead[2] && bandeira_flag == 0){
       vel_motor_dir = 500;
       vel_motor_esq = 700;
-    } else if (sensor.sensorRead[1] && bandeira_flag == 0){
-      vel_motor_dir = 500;
-      vel_motor_esq = 800;
     }else if (sensor.sensorRead[2] && sensor.sensorRead[3] && bandeira_flag == 0){
       vel_motor_dir = 700;
       vel_motor_esq = 500;
@@ -210,19 +210,17 @@ void search()
       vel_motor_esq = 800;
     }else if (sensor.sensorRead[3] && sensor.sensorRead[4] && bandeira_flag == 0){
       vel_motor_dir = 700;
-      vel_motor_esq = 200;
+      vel_motor_esq = 300;
     } else if (sensor.sensorRead[4] && bandeira_flag == 0){
       vel_motor_dir = 600;
       vel_motor_esq = -600;
-    } else if (sensor.sensorRead[3] && bandeira_flag == 0){
-      vel_motor_dir = 800;
-      vel_motor_esq = 500;
     }
     // loop att leastread
     for (int i=0; i< NUM_SENSORS; i++){
       lastRead[i]= sensor.sensorRead[i];
     }
   }
+}
 }
 void check_border()
 {
