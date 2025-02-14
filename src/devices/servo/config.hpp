@@ -14,7 +14,6 @@
 #define FOUR 3
 #define FIVE 4
 #define SIX 5
-#define SEVEN 6
 
 // these constants are used to allow you to make your motor configuration 
 // line up with function names like forward.  Value can be 1 or -1

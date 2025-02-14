@@ -10,6 +10,7 @@
 #include "led_rgb.h"
 #include "JS40F_JSumo.h"
 #include "Motor450.h"
+#include <ESP32Servo.h>  
 //#include "H_bridge_TB6612.hpp"
 //#include <BluetoothSerial.h>
 //#include "VL53_sensors.hpp"
@@ -17,6 +18,8 @@
 
 // inicialização dos objetos
 //VL53_sensors sensores;
+#define TEMPO_VIRADA 100
+
 JS40F_JSumo sensor;
 
 
@@ -64,6 +67,10 @@ bool flagInit = 0;
 int sensorRead[NUM_SENSORS];
 int lastRead[NUM_SENSORS] = {0,0,0,0,0};
 
+Servo myServo;  
+uint8_t servoAngle = 90;  // Começa em 90°
+int servoMoved = 0;  // Flag para evitar movimentos repetidos
+
 // Declaração das funções
 void drive(int mot1, int mot2);
 void search();
@@ -84,6 +91,8 @@ enum {
   S2, 
 };
 int strategy; // ????
+unsigned long inicioVirada = 0;  // Guarda o tempo inicial da virada
+int virando = 0;  // Indica se está virando
 
 void setup() {
    // inicialização dos sensores, controles e led
@@ -96,6 +105,8 @@ void setup() {
    LED.set(AZUL);
    delay(1000);
    LED.set(0);
+   myServo.attach(SERVO);  
+  myServo.write(90);  // Inicia em 90°
 
 }
 
@@ -121,6 +132,10 @@ void loop() {
 
  case TWO: // caso loop padrão 
    // sensores.distanceRead();
+   if (!servoMoved) {  // Só move se ainda não tiver se movido
+    myServo.write(servoAngle);
+    servoMoved = 1;  // Impede novos movimentos até atualizar o ângulo
+  }
    strategy_selector();
    check_border();
    re();
@@ -154,9 +169,14 @@ void loop() {
    LED.fill(MAGENTA);
  break;
  case SIX:
-   prioridadeAtaque = 1;
+   servoAngle = 180;
    LED.fill(BRANCO);
    last_ir = SIX;
+ break;
+ case SEVEN:
+   servoAngle = 0;
+   LED.fill(BRANCO);
+   last_ir = SEVEN;
  break;
  default:
  break;
@@ -173,28 +193,40 @@ void search()
 {
   if (!flagRe){
   if (!sensor.sensorRead[0] && !sensor.sensorRead[1]  && !sensor.sensorRead[2] && !sensor.sensorRead[3] && !sensor.sensorRead[4]){
-    if (lastRead[0] || lastRead[1]){
-        vel_motor_dir = -500;
-        vel_motor_esq = 500;
-    } else if (lastRead[3] || lastRead[4]){
-      vel_motor_dir = 500;
-      vel_motor_esq = -500;
-    } else if (lastRead[2]){
+    // Se ainda não está virando, inicia a virada
+    if (!virando) {
+      inicioVirada = millis();  // Marca o tempo de início
+      virando = 1;  // Ativa a flag de virada
+
+      if (lastRead[0] || lastRead[1]) {
+        vel_motor_dir = -400;
+        vel_motor_esq = 400;  // Vira para a direita
+      } else if (lastRead[3] || lastRead[4]) {
+        vel_motor_dir = 400;
+        vel_motor_esq = -400;  // Vira para a esquerda
+      } else {
+        vel_motor_dir = 400;
+        vel_motor_esq = 400;  // Continua reto
+      }
+    }
+
+    // Se já está virando, verifica se passou 500 ms
+    if (virando && millis() - inicioVirada >= TEMPO_VIRADA) 
+    {
+      virando = false;  // Cancela a virada
       vel_motor_dir = 400;
-      vel_motor_esq = 400;
-    } else if (!lastRead[0] && !lastRead[1] && !lastRead[2] && !lastRead[3] && !lastRead[4]){
-      vel_motor_dir = 400;
-      vel_motor_esq = 400;
+      vel_motor_esq = 400;  // Continua reto após a virada
     }
   }
   else
   {
+    virando = 0;
     if (sensor.sensorRead[0] && sensor.sensorRead[1] && bandeira_flag == 0){
       vel_motor_dir = 300;
       vel_motor_esq = 700;
     } else if (sensor.sensorRead[0] && bandeira_flag == 0){
-      vel_motor_dir = -600;
-      vel_motor_esq = 600;
+      vel_motor_dir = -500;
+      vel_motor_esq = 500;
     }else if (sensor.sensorRead[1] && sensor.sensorRead[2] && sensor.sensorRead[3] && bandeira_flag == 0){
       vel_motor_dir = 1000;
       vel_motor_esq = 1000;
@@ -206,14 +238,14 @@ void search()
       vel_motor_dir = 700;
       vel_motor_esq = 500;
     }else if (sensor.sensorRead[2] && bandeira_flag == 0){
-      vel_motor_dir = 800;
-      vel_motor_esq = 800;
+      vel_motor_dir = 850;
+      vel_motor_esq = 850;
     }else if (sensor.sensorRead[3] && sensor.sensorRead[4] && bandeira_flag == 0){
       vel_motor_dir = 700;
       vel_motor_esq = 300;
     } else if (sensor.sensorRead[4] && bandeira_flag == 0){
-      vel_motor_dir = 600;
-      vel_motor_esq = -600;
+      vel_motor_dir = 400;
+      vel_motor_esq = -400;
     }
     // loop att leastread
     for (int i=0; i< NUM_SENSORS; i++){
@@ -231,7 +263,7 @@ void check_border()
     last_line_detected = line_detected; 
   if (border_dir || border_esq){ // se viu qualquer borda inicializa as variaveis pra entrar na preferencia da ré e ter 
   // "tempo" de arrumar
-    tempoRe = 200;
+    tempoRe = 100;
     line_detected = 1;
     flagRe = 1;
   }
@@ -243,21 +275,23 @@ void re(){
     if(current_time - start_time < tempoRe && flagRe){
       // se o tempo de ré não tiver passado ele ajeita o robo e volta reto
       if (border_dir && border_esq){
-        tempoRe = 300;
+        tempoRe = 200;
         vel_motor_dir = -700;
         vel_motor_esq = -700;
       }else if (border_dir){
         tempoRe = 300;
-        vel_motor_dir = -200;
-        vel_motor_esq = -800;
+        vel_motor_dir = -700;
+        vel_motor_esq = -250;
       }else if (border_esq){
         tempoRe = 300;
-        vel_motor_dir = -800;
-        vel_motor_esq = -200;
-      }else{
-        vel_motor_dir = -700;
+        vel_motor_dir = -250;
         vel_motor_esq = -700;
+      }else
+      {
+        vel_motor_dir = -400;
+        vel_motor_esq = -400;
       }
+
     } else{ // zera as variaveis  
         tempoRe = 0;
         flagRe = 0;
@@ -268,8 +302,8 @@ void meiaLua()
   { //estratégia que gira em meia lua por certo tempo
     current_time = millis();
     if (current_time - start_timeStrategy <= strategyTime){
-    vel_motor_dir = 1000;
-    vel_motor_esq = 600;
+    vel_motor_dir = 600;
+    vel_motor_esq = 400;
     } else {
     strategyDone = 1;
     }
@@ -307,7 +341,8 @@ void strategy_selector()
   if (!strategyDone){
     switch (strategy){
     case S0:
-      strategyDone = 1;
+      strategyTime = 300;
+      meiaLua();
       break;   
     case S1:
       strategyTime = 100;
