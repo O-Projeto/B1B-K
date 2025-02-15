@@ -8,7 +8,7 @@ private:
     int read_sensor; 
     int MAX_VALUE = 4095;
     int MIN_VALUE = 120; 
-    int treshold = 700; 
+    int treshold = 1500; 
     int pin; 
     int probability_of_border; 
    

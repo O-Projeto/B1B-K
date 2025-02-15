@@ -9,6 +9,7 @@
 // *************************************************
 
 #define DEFAULT_LEDC_FREQ 5000
+#define MAX_PWM 1023
 
 Motor450::Motor450(byte driverPin1, byte driverPin2, int channel1, int channel2, int resolution)
 {
@@ -60,8 +61,8 @@ void Motor450::stop(byte brake)
     this->drive(0); // Para o motor sem freio
   } else {
     int maxPWM = (1 << _resolution) - 1;  // Calcula 2^resolução - 1
-    PWMWRITE(_channel1, maxPWM);
-    PWMWRITE(_channel2, maxPWM);
+    PWMWRITE(_channel1, 1023);
+    PWMWRITE(_channel2, 1023);
   }
 }
 
