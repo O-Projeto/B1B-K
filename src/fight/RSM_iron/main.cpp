@@ -78,6 +78,7 @@ void check_border();
 void re();
 void totalFrente();
 void meiaLua();
+void empate();
 void strategy_selector();
 void frenteUmPouco();
 
@@ -182,6 +183,11 @@ void loop() {
    servoAngle = 0;
    LED.fill(BRANCO);
    last_ir = SEVEN;
+ break;
+ case NINE:
+   strategy = S2;
+   LED.fill(LARANJA);
+   last_ir = NINE;
  break;
  default:
  break;
@@ -376,8 +382,8 @@ void meiaLua()
   { //estratégia que gira em meia lua por certo tempo
     current_time = millis();
     if (current_time - start_timeStrategy <= strategyTime){
-    vel_motor_dir = 400;
-    vel_motor_esq = 300;
+    vel_motor_dir = 600;
+    vel_motor_esq = 500;
     } else {
     strategyDone = 1;
     }
@@ -396,6 +402,17 @@ void frenteUmPouco()
 
 }
 
+void empate()
+{
+  current_time = millis();
+  if (current_time - start_timeStrategy <= strategyTime){
+  vel_motor_dir = 900;
+  vel_motor_esq = 0;
+  } else {
+  strategyDone = 1;
+  }
+}
+
 void totalFrente()
 { 
   if(!startFrente_flag)
@@ -409,10 +426,11 @@ void totalFrente()
 
 void strategy_selector()
 {
-  if (!strategyStart){
+  if (!strategyStart)
+  {
       start_timeStrategy = millis();
       strategyStart = 1;
-      }
+  }
   if (!strategyDone){
     switch (strategy){
     case S0:
@@ -420,9 +438,13 @@ void strategy_selector()
       meiaLua();
       break;   
     case S1:
-      strategyTime = 150;
+      strategyTime = 0;
       frenteUmPouco();
       break;
+    case S2:
+      strategyTime = 200;
+      empate();
+    break;
     default:
       strategyDone = 1;
       break;

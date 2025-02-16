@@ -10,7 +10,10 @@
 #include "led_rgb.h"
 #include "JS40F_JSumo.h"
 #include "Motor450.h"
-#include <ESP32Servo.h>  
+#include <ESP32Servo.h>
+#include <Wire.h>
+#include <Adafruit_MPU6050.h>
+#include <Adafruit_Sensor.h>  
 //#include "H_bridge_TB6612.hpp"
 //#include <BluetoothSerial.h>
 //#include "VL53_sensors.hpp"
@@ -81,8 +84,9 @@ void meiaLua();
 void strategy_selector();
 void frenteUmPouco();
 
-void updateCalculatedDistance();
-void readSensorsTask(void *pvParameters);
+void updateMPU();
+void readMPUTask(void *parameter);
+uint8_t flagMpu = 0;
 
 // definição das estrategias por nome (???)
 enum {
@@ -93,6 +97,14 @@ enum {
 int strategy; // ????
 unsigned long inicioVirada = 0;  // Guarda o tempo inicial da virada
 int virando = 0;  // Indica se está virando
+
+Adafruit_MPU6050 mpu;
+QueueHandle_t mpuQueue;
+
+struct MPUData {
+    float accZ;
+    float gyroZ;
+};
 
 void setup() {
    // inicialização dos sensores, controles e led
@@ -217,7 +229,19 @@ void drive(int mot1, int mot2){
   
 }   
 
-
+void readMPUTask(void *parameter) {
+  MPUData data;
+  while (true) {
+      sensors_event_t a, g, temp;
+      mpu.getEvent(&a, &g, &temp);
+      
+      data.accZ = a.acceleration.z;
+      data.gyroZ = g.gyro.z;
+      
+      xQueueOverwrite(mpuQueue, &data); // Sobrescreve a última leitura
+      vTaskDelay(pdMS_TO_TICKS(10)); // Aguarda 10 ms
+  }
+}
 
 void search()
 {
@@ -344,6 +368,16 @@ void check_border()
   else {line_detected = 0;}
   }
  
+void updateMPU()
+{
+  MPUData data;
+  if (xQueueReceive(mpuQueue, &data, 0)) {
+      Serial.print(data.accZ);
+      Serial.println(data.gyroZ);
+  }
+  vTaskDelay(pdMS_TO_TICKS(10)); 
+}
+  
 void re(){
     current_time = millis();
     if(current_time - start_time < tempoRe && flagRe){
