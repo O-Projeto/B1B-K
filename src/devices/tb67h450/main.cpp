@@ -96,7 +96,7 @@ void loop() {
     motor2.drive(k);
     Serial.println(k);
     delay(10);
-  }*/
+  }
 
  motor1.drive(500);
  motor2.drive(0);
@@ -115,5 +115,9 @@ void loop() {
  delay(5000);
  motor1.drive(-500);
  motor2.drive(-500);
+ delay(5000);*/
+
+ motor1.drive(500);
+ motor2.drive(500);
  delay(5000);
  }

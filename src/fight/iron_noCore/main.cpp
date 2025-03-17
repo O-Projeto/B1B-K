@@ -110,6 +110,7 @@ void setup() {
    for(int i = 0; i < NUM_SENSORS; i++)
    {
       lastRead[i] = 0;
+      sensorRead[i] = 0;
    }
 
 }
