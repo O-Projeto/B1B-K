@@ -1,13 +1,12 @@
 //PWM control for the motors 
 #include <Adafruit_NeoPixel.h>
-#include "config.h"
+#pragma once
 
 
-#define NUMPIXELS 3
-#define LED_PIN 23
+#define NUMPIXELS 2
+#define RGB_PIN 23
 
-
-Adafruit_NeoPixel pixels(NUMPIXELS, LED_PIN, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel pixels(NUMPIXELS, RGB_PIN, NEO_GRB + NEO_KHZ800);
 
 class led_rgb 
 {
@@ -19,24 +18,23 @@ private:
 
   
 public:
+    bool flag = 0;
     void init();
     void blink(const long time, int color);
-
-    void latch(const long time, int color);
-
     void set(int color);
     
     void fill(int color);
+    void latch(const long time, int color);
 };
 
 
 void led_rgb ::init(){
     //set motor
   pixels.begin(); // INITIALIZE NeoPixel strip object (REQUIRED)
-  pixels.setBrightness(100); // not so bright]
+  pixels.setBrightness(50); // not so bright]
   pixels.fill(0x000000);
   pixels.show();
-  unsigned long start_time = millis();
+  start_time = millis();
 
 };
 
@@ -72,24 +70,18 @@ void led_rgb ::latch(const long time, int color){
 
   unsigned long currentMillis = millis();
 
-  if (currentMillis - start_time <= time) {
-    // save the last time you blinked the LED
-    previousMillis = currentMillis;
-
-    // set the LED with the ledState of the variable:
-   
+  if (currentMillis - start_time <= time && !flag) {
     pixels.fill(color);
     pixels.show();
-    
    
   }else{
         start_time = millis();
         pixels.fill(0x000000);
         pixels.show();
+        flag = 1; 
   }
-   
+  flag = 0; 
 }
-
 void led_rgb::set(int color){
 
     pixels.fill(color);

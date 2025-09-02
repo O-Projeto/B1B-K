@@ -1,8 +1,3 @@
-// a main inclui uma maquina de estados que definida pelo controle roda o loop (escolha da estrategia e comandos) 
-
-/*Verificar qual b1bk esta sendo usada para setar os trash-holds*/
-
-// bibliotecas
 #include <Arduino.h>
 #include "config.hpp"
 #include "controle_juiz.hpp"
@@ -10,445 +5,229 @@
 #include "led_rgb.h"
 #include "JS40F_JSumo.h"
 #include "Motor450.h"
-#include <ESP32Servo.h>  
-//#include "H_bridge_TB6612.hpp"
-//#include <BluetoothSerial.h>
-//#include "VL53_sensors.hpp"
-//#include <Wire.h>
+#include <ESP32Servo.h>
 
-// inicialização dos objetos
-//VL53_sensors sensores;
-#define TEMPO_VIRADA 100
+// =================================================================
+// 1. OBJETOS DE HARDWARE
+// =================================================================
 JS40F_JSumo sensor;
-
-
 controle_juiz controle_sony(34);
-
 refletancia qr_dir(qrDir, 3000);
-refletancia qr_esq(qrEsq, 3000); // rcx era entre 50 e 100
-
+refletancia qr_esq(qrEsq, 3000);
 led_rgb LED;
+Motor450 motordir = Motor450(AIN1, AIN2, offsetA, offsetB, 10);
+Motor450 motoresq = Motor450(BIN1, BIN2, offsetC, offsetD, 10);
+Servo myServo;
 
-Motor450 motordir = Motor450(AIN1, AIN2, offsetA, offsetB,  10);
-Motor450 motoresq = Motor450(BIN1, BIN2, offsetC, offsetD,  10);
+// =================================================================
+// 2. ESTADOS DO ROBÔ
+// =================================================================
+enum EstadoRobo {
+    AGUARDANDO_INICIO,
+    BUSCANDO,
+    ATACANDO,
+    EVITANDO_BORDA,
+    FIM_DE_PARTIDA // NOVO ESTADO: Trava o robô permanentemente
+};
 
-
-// variaveis 
-float  read_sensor_dir = 0;
-float read_sensor_esq = 0; 
-bool border_dir, border_esq; 
-int last_line_detected = 0;
-int line_detected = 0;
-float start_time = 0;
-float current_time = 0;
-float tempoRe=0;
-bool flagRe= 0;
-bool prioridadeAtaque = 0;
-bool bandeira_flag = 0;
-
-int read_ir = -1;
-int last_ir = 0;
+// =================================================================
+// 3. VARIÁVEIS DE ESTADO E CONTROLE
+// =================================================================
+EstadoRobo estadoAtual = AGUARDANDO_INICIO;
+unsigned long tempoInicioEstado = 0;
 
 int vel_motor_dir = 0;
 int vel_motor_esq = 0;
 
-int mediaCentro, lastMediaCentro=10000;
+int lastRead[NUM_SENSORS] = {0};
+int ultimoComandoIR = 0;
 
-int strategyDone=0;
-int strategyStart=0;
-float start_timeStrategy = 0;
-int strategyTime = 0;
-int start_timeFrente=0,frenteTime=1000, enemyfront= 0, startFrente_flag = 0; 
+// =================================================================
+// 4. PROTÓTIPOS E SETUP
+// =================================================================
+void mudarEstado(EstadoRobo novoEstado);
+void executarMaquinaDeEstados();
+void processarComandoIR();
 
-// search
-float start_timeSearch = 0;
-bool flagInit = 0;
-int sensorRead[NUM_SENSORS];
-int lastRead[NUM_SENSORS] = {0,0,0,0,0};
-
-Servo myServo;  
-uint8_t servoAngle = 90;  // Começa em 90°
-int servoMoved = 0;  // Flag para evitar movimentos repetidos
-int tempoGiro, tempoParado;
-
-// Declaração das funções
-void drive(int mot1, int mot2);
-void search();
-void check_border();
-void re();
-void totalFrente();
-void meiaLua();
-void empate();
-void strategy_selector();
-void frenteUmPouco();
-
-void updateCalculatedDistance();
-void readSensorsTask(void *pvParameters);
-
-// definição das estrategias por nome (???)
-enum {
-  S0, 
-  S1,
-  S2, 
-};
-int strategy; // ????
-unsigned long inicioVirada = 0;  // Guarda o tempo inicial da virada
-int virando = 0;  // Indica se está virando
-
-void setup() {
-   // inicialização dos sensores, controles e led
-   Serial.begin(112500);
-   sensor.sensorsInit();
-   controle_sony.init();
-   motordir.stop(HARD_BRAKE);
-   motoresq.stop(HARD_BRAKE);
-   LED.init();
-   LED.set(AZUL);
-   delay(1000);
-   LED.set(0);
-   myServo.attach(SERVO);  
-   myServo.write(90);  // Inicia em 90°
-   for(int i = 0; i < NUM_SENSORS; i++)
-   {
-      lastRead[i] = 0;
-   }
-
-}
-
-void loop() {
- // leitura do controle e filtro 
- read_ir = controle_sony.read();
- if (last_ir == TWO && (read_ir != TREE)){read_ir = TWO;}
- else if (last_ir == TREE){read_ir = TREE;}
-
- // leitura qr e teste de borda
- read_sensor_dir = qr_dir.read();
- read_sensor_esq = qr_esq.read();
- border_dir = qr_dir.detect_border();
- border_esq = qr_esq.detect_border();
-
- // sensor.distanceRead();
- switch (read_ir){
- case ONE:
-     last_ir = ONE;
-     LED.fill(VERDE);
-     start_time = millis();
-     break;
-
- case TWO: // caso loop padrão 
-   sensor.distanceRead();
-   if (!servoMoved) {  // Só move se ainda não tiver se movido
-    myServo.write(servoAngle);
-    servoMoved = 1;  // Impede novos movimentos até atualizar o ângulo
-  }
-   strategy_selector();
-   check_border();
-   re();
-   search();
-   /*if (strategyDone){// se a estratégia estiver feita o código padrão volta ao normal 
-   //updateCalculatedDistance();
-   search();
-   }*/
-   drive(vel_motor_dir,vel_motor_esq); //unico lugar onde manda velocidade pros motores
-   last_ir = TWO;
-   break;
- case TREE: //reinicializa tudo (aparentemente não pode por regra do sumo)
-   drive(0,0);
-   delay(10);
-   LED.set(VERMELHO);
-   tempoRe = 0;
-   flagRe = 0;
-   last_ir = TREE;
-   strategyStart = 0;
-   strategyDone=0;
-   lastMediaCentro = 0;
-   enemyfront = 0;
-   break;
- case FOUR:
-   strategy = S0;
-   last_ir = FOUR;
-   LED.fill(MAGENTA);
- break;
- case FIVE:
-   strategy = S1;
-   last_ir = FIVE;
-   LED.fill(MAGENTA);
- break;
- case SIX:
-   servoAngle = 180;
-   LED.fill(BRANCO);
-   last_ir = SIX;
- break;
- case SEVEN:
-   servoAngle = 0;
-   LED.fill(BRANCO);
-   last_ir = SEVEN;
- break;
- case NINE:
-   strategy = S2;
-   LED.fill(LARANJA);
-   last_ir = NINE;
- break;
- default:
- break;
-}
-  read_ir = controle_sony.read();
-}
-void drive(int mot1, int mot2){
-  if(mot1 == 0 || mot2 == 0)
-  { 
-    if (mot1 == 0)
-    {
-      motoresq.drive(mot2);
-      motordir.stop(HARD_BRAKE);
-
-    }
-    if (mot2 == 0)
-    {
-      motoresq.stop(HARD_BRAKE);
-      motordir.drive(mot1);
-
-    }
-    if (mot1 == 0 && mot2 == 0) {
-      // Para ambos os motores completamente
-      motoresq.stop(HARD_BRAKE);
-      motordir.stop(HARD_BRAKE);
-    }
-  }
-  else
-  {
+void drive(int mot1, int mot2) {
     motordir.drive(mot1);
     motoresq.drive(mot2);
-  }
-  
-}   
-
-
-
-void search()
-{
-  if (!flagRe){
-  if (!sensor.sensorRead[0] && !sensor.sensorRead[1]  && !sensor.sensorRead[2] && !sensor.sensorRead[3] && !sensor.sensorRead[4]){
-    // Se ainda não está virando, inicia a virada
-    if (!virando) {
-      inicioVirada = millis();  // Marca o tempo de início
-      virando = 1;  // Ativa a flag de virada
-      if ((lastRead[1] &&  lastRead[2] && lastRead[3]) || (lastRead[2] && !lastRead[1] && !lastRead[3] && !lastRead[4] && !lastRead[0])) {
-        vel_motor_dir = 300;
-        vel_motor_esq = 300;  
-      }
-      else if (lastRead[1] &&  lastRead[2]) {
-        vel_motor_dir = 320;
-        vel_motor_esq = 400;  // Vira para a direita
-      }
-      else if (lastRead[2] &&  lastRead[3]) {
-        vel_motor_dir = 400;
-        vel_motor_esq = 320;  // Vira para a direita
-      }
-      else if (lastRead[0]) {
-        vel_motor_dir = 0;
-        vel_motor_esq = 400;  
-      } else if (lastRead[4]) {
-        vel_motor_dir = 400;
-        vel_motor_esq = 0;  // Vira para a esquerda
-      } else {
-        vel_motor_dir = 200;
-        vel_motor_esq = 200;  // Continua reto
-      }
-    }
-
-    // Se já está virando, verifica se passou 500 ms
-    if (virando && millis() - inicioVirada >= TEMPO_VIRADA) 
-    {
-      virando = false;  // Cancela a virada
-      vel_motor_dir = 400;
-      vel_motor_esq = 400;  // Continua reto após a virada
-    }
-  }
-  else
-  {
-    virando = 0;
-    if (sensor.sensorRead[0] && sensor.sensorRead[1] && bandeira_flag == 0){
-      vel_motor_dir = 300;
-      vel_motor_esq = 600;
-    } else if (sensor.sensorRead[0] && bandeira_flag == 0){
-      vel_motor_dir = 0;
-      vel_motor_esq = 500;
-    }else if (sensor.sensorRead[3] && sensor.sensorRead[4] && bandeira_flag == 0){
-      vel_motor_dir = 600;
-      vel_motor_esq = 300;
-    } else if (sensor.sensorRead[4] && bandeira_flag == 0){
-      vel_motor_dir = 500;
-      vel_motor_esq = 0;
-    }
-    else if (sensor.sensorRead[1] && sensor.sensorRead[2] && sensor.sensorRead[3] && bandeira_flag == 0){
-      vel_motor_dir = 1000;
-      vel_motor_esq = 1000;
-    }
-    else if (sensor.sensorRead[1] && sensor.sensorRead[2] && bandeira_flag == 0){
-      vel_motor_dir = 1000;
-      vel_motor_esq = 1000;
-    }else if (sensor.sensorRead[2] && sensor.sensorRead[3] && bandeira_flag == 0){
-      vel_motor_dir = 1000;
-      vel_motor_esq = 1000;
-    }
-    else if (sensor.sensorRead[2] && bandeira_flag == 0){
-      vel_motor_dir = 800;
-      vel_motor_esq = 800;
-    } 
-        // loop att leastread
-    for (int i=0; i< NUM_SENSORS; i++){
-      lastRead[i]= sensor.sensorRead[i];
-    }
-  }
-  }
-  else
-  {
-    if (sensor.sensorRead[0] && bandeira_flag == 0){
-      vel_motor_dir = 0;
-      vel_motor_esq = 500;
-      for (int i=0; i< NUM_SENSORS; i++){
-        lastRead[i]= sensor.sensorRead[i];
-      }
-    }
-    else if (sensor.sensorRead[4] && bandeira_flag == 0){
-      vel_motor_dir = 500;
-      vel_motor_esq = 0;
-      for (int i=0; i< NUM_SENSORS; i++){
-        lastRead[i]= sensor.sensorRead[i];
-      }
-    }
-    else if (sensor.sensorRead[1] && sensor.sensorRead[2] && sensor.sensorRead[3] && bandeira_flag == 0){
-      vel_motor_dir = 1000;
-      vel_motor_esq = 1000;
-      for (int i=0; i< NUM_SENSORS; i++){
-        lastRead[i]= sensor.sensorRead[i];
-      }
-    }
-    else if (sensor.sensorRead[2] && bandeira_flag == 0){
-      vel_motor_dir = 700;
-      vel_motor_esq = 700;
-      for (int i=0; i< NUM_SENSORS; i++){
-        lastRead[i]= sensor.sensorRead[i];
-      }
-    } 
-  }
-}
-void check_border()
-{
-  if (line_detected != last_line_detected) // testa pra caso esteja realmente vendo a linha
-  {
-    start_time = millis();
-  }
-    last_line_detected = line_detected; 
-  if (border_dir || border_esq){ // se viu qualquer borda inicializa as variaveis pra entrar na preferencia da ré e ter 
-  // "tempo" de arrumar
-    tempoRe = 200;
-    line_detected = 1;
-    flagRe = 1;
-  }
-  else {line_detected = 0;}
-  }
- 
-void re(){
-    current_time = millis();
-    if(current_time - start_time < tempoRe && flagRe){
-      // se o tempo de ré não tiver passado ele ajeita o robo e volta reto
-      if (border_dir && border_esq){
-        tempoRe = 200;
-        vel_motor_dir = -500;
-        vel_motor_esq = -500;
-      }else if (border_dir){
-        tempoRe = 300;
-        vel_motor_dir = -700;
-        vel_motor_esq = -250;
-      }else if (border_esq){
-        tempoRe = 300;
-        vel_motor_dir = -250;
-        vel_motor_esq = -500;
-      }else
-      {
-        vel_motor_dir = -400;
-        vel_motor_esq = -400;
-      }
-
-    } else{ // zera as variaveis  
-        tempoRe = 0;
-        flagRe = 0;
-    }
-}
-  
-void meiaLua()
-  { //estratégia que gira em meia lua por certo tempo
-    current_time = millis();
-    if (current_time - start_timeStrategy <= strategyTime){
-    vel_motor_dir = 600;
-    vel_motor_esq = 500;
-    } else {
-    strategyDone = 1;
-    }
-  }
-
-
-void frenteUmPouco()
-{ // vai pra frente por um tempo estimulado
-  current_time = millis();
-  if (current_time - start_timeStrategy <= strategyTime){
-  vel_motor_dir = 400;
-  vel_motor_esq = 400;
-  } else {
-  strategyDone = 1;
-  }
-
 }
 
-void empate()
-{
-  current_time = millis();
-  if (current_time - start_timeStrategy <= strategyTime){
-  vel_motor_dir = 900;
-  vel_motor_esq = 0;
-  } else {
-  strategyDone = 1;
-  }
+void setup() {
+    Serial.begin(115200);
+    sensor.sensorsInit();
+    controle_sony.init();
+    LED.init();
+    myServo.attach(SERVO);
+    myServo.write(90);
+
+    LED.blink(AZUL, 1000);
+    delay(1000);
+    mudarEstado(AGUARDANDO_INICIO);
 }
 
-void totalFrente()
-{ 
-  if(!startFrente_flag)
-    start_timeFrente = millis ();
-  startFrente_flag = 1;
-  if (millis() - start_timeFrente >= frenteTime){
-    vel_motor_dir = 1000;
-    vel_motor_esq = 1000;
-  }
+// =================================================================
+// 5. LOOP PRINCIPAL
+// =================================================================
+void loop() {
+    processarComandoIR();
+    executarMaquinaDeEstados();
+    drive(vel_motor_dir, vel_motor_esq);
+    delay(10); // Um pequeno delay pode ajudar na estabilidade
 }
 
-void strategy_selector()
-{
-  if (!strategyStart)
-  {
-      start_timeStrategy = millis();
-      strategyStart = 1;
-  }
-  if (!strategyDone){
-    switch (strategy){
-    case S0:
-      strategyTime = 200;
-      meiaLua();
-      break;   
-    case S1:
-      strategyTime = 0;
-      frenteUmPouco();
-      break;
-    case S2:
-      strategyTime = 200;
-      empate();
-    break;
-    default:
-      strategyDone = 1;
-      break;
+// =================================================================
+// 6. LÓGICA DA MÁQUINA DE ESTADOS
+// =================================================================
+
+// Função centralizada para mudar de estado.
+void mudarEstado(EstadoRobo novoEstado) {
+    if (estadoAtual != novoEstado) {
+        estadoAtual = novoEstado;
+        tempoInicioEstado = millis(); // Reseta o timer do estado
+
+        // Adiciona feedback visual para cada estado
+        switch (novoEstado) {
+            case ATACANDO:        LED.set(VERMELHO); break;
+            case BUSCANDO:        LED.set(VERDE); break;
+            case EVITANDO_BORDA:  LED.set(AMARELO); break;
+            case FIM_DE_PARTIDA:  LED.set(AZUL); break; // Azul sólido para indicar fim
+            case AGUARDANDO_INICIO: LED.latch(AZUL, 500); break;
+        }
     }
-    
-  }
-} // 
+}
+
+void executarMaquinaDeEstados() {
+    // --- Leituras de sensores feitas uma vez por ciclo ---
+    sensor.distanceRead();
+    bool bordaDirDetectada = qr_dir.detect_border();
+    bool bordaEsqDetectada = qr_esq.detect_border();
+    bool bordaDetectada = bordaDirDetectada || bordaEsqDetectada;
+
+    bool inimigoAVista = false;
+    for(int i=0; i < NUM_SENSORS; i++) {
+        if (sensor.sensorRead[i]) {
+            inimigoAVista = true;
+            break;
+        }
+    }
+
+    // Se virmos o inimigo, atualizamos a memória
+    if (inimigoAVista) {
+        for (int i = 0; i < NUM_SENSORS; i++) {
+            lastRead[i] = sensor.sensorRead[i];
+        }
+    }
+
+    // --- Lógica de Transição e Ação para cada estado ---
+    switch (estadoAtual) {
+        case AGUARDANDO_INICIO:
+            vel_motor_dir = 0;
+            vel_motor_esq = 0;
+            break;
+
+        case ATACANDO:
+            if (bordaDetectada) { mudarEstado(EVITANDO_BORDA); return; }
+            if (!inimigoAVista) { mudarEstado(BUSCANDO); return; }
+
+            // AÇÃO: Lógica de ataque
+            if (sensor.sensorRead[SENSOR_FRENTE_ESQ] && sensor.sensorRead[SENSOR_FRENTE_CTR] && sensor.sensorRead[SENSOR_FRENTE_DIR]) {
+                vel_motor_dir = 1000; vel_motor_esq = 1000;
+            } else if (sensor.sensorRead[SENSOR_FRENTE_ESQ] && sensor.sensorRead[SENSOR_FRENTE_CTR]) {
+                vel_motor_dir = 1000; vel_motor_esq = 1000;
+            } else if (sensor.sensorRead[SENSOR_FRENTE_CTR] && sensor.sensorRead[SENSOR_FRENTE_DIR]) {
+                vel_motor_dir = 1000; vel_motor_esq = 1000;
+            } else if (sensor.sensorRead[SENSOR_LATERAL_ESQ] && sensor.sensorRead[SENSOR_FRENTE_ESQ]) {
+                vel_motor_dir = 300; vel_motor_esq = 600;
+            } else if (sensor.sensorRead[SENSOR_FRENTE_DIR] && sensor.sensorRead[SENSOR_LATERAL_DIR]) {
+                vel_motor_dir = 600; vel_motor_esq = 300;
+            } else if (sensor.sensorRead[SENSOR_LATERAL_ESQ]) {
+                vel_motor_dir = 0; vel_motor_esq = 500;
+            } else if (sensor.sensorRead[SENSOR_LATERAL_DIR]) {
+                vel_motor_dir = 500; vel_motor_esq = 0;
+            } else if (sensor.sensorRead[SENSOR_FRENTE_CTR]) {
+                vel_motor_dir = 800; vel_motor_esq = 800;
+            }
+            break;
+
+        case BUSCANDO:
+            if (bordaDetectada) { mudarEstado(EVITANDO_BORDA); return; }
+            if (inimigoAVista) { mudarEstado(ATACANDO); return; }
+
+            // AÇÃO: Lógica de busca
+            if (millis() - tempoInicioEstado > 500) {
+                vel_motor_dir = 400;
+                vel_motor_esq = 400;
+                for(int i = 0; i < NUM_SENSORS; i++) { lastRead[i] = 0; }
+            } else {
+                if (lastRead[SENSOR_LATERAL_ESQ] || lastRead[SENSOR_FRENTE_ESQ]) {
+                    vel_motor_dir = 400; vel_motor_esq = -200; // Vira para esquerda
+                } else if (lastRead[SENSOR_FRENTE_DIR] || lastRead[SENSOR_LATERAL_DIR]) {
+                    vel_motor_dir = -200; vel_motor_esq = 400; // Vira para direita
+                } else {
+                    vel_motor_dir = 400; vel_motor_esq = -400; // Gira
+                }
+            }
+            break;
+
+        case EVITANDO_BORDA:
+            unsigned long tempo_decorrido = millis() - tempoInicioEstado;
+            unsigned int duracao_reacao = 200; // Duração padrão
+
+            if (bordaDirDetectada && bordaEsqDetectada) {
+                duracao_reacao = 200; vel_motor_dir = -500; vel_motor_esq = -500;
+            } else if (bordaDirDetectada) {
+                duracao_reacao = 300; vel_motor_dir = -700; vel_motor_esq = -250;
+            } else if (bordaEsqDetectada) {
+                duracao_reacao = 300; vel_motor_dir = -250; vel_motor_esq = -500;
+            } else {
+                duracao_reacao = 150; vel_motor_dir = -400; vel_motor_esq = -400;
+            }
+
+            if (tempo_decorrido >= duracao_reacao) {
+                mudarEstado(BUSCANDO);
+            }
+            break;
+        
+        // NOVO CASE: Garante que o robô permaneça parado.
+        case FIM_DE_PARTIDA:
+            vel_motor_dir = 0;
+            vel_motor_esq = 0;
+            myServo.write(90); // Opcional: retorna o servo à posição inicial
+            break;
+    }
+}
+
+void processarComandoIR() {
+    // ALTERAÇÃO: Se a partida terminou, ignora qualquer novo comando.
+    if (estadoAtual == FIM_DE_PARTIDA) {
+        return;
+    }
+
+    int comando = controle_sony.read();
+
+    if (comando != -1) {
+        switch (comando) {
+            case ONE:
+                // Só funciona se estiver no estado inicial.
+                if (estadoAtual == AGUARDANDO_INICIO) {
+                    mudarEstado(AGUARDANDO_INICIO);
+                    myServo.write(90);
+                }
+                break;
+
+            case TWO:
+                if (estadoAtual == AGUARDANDO_INICIO) {
+                    myServo.write(180); // Posição de ataque
+                    mudarEstado(BUSCANDO);
+                }
+                break;
+
+            case TREE:
+                // ALTERAÇÃO: Muda para o estado final e sem retorno.
+                mudarEstado(FIM_DE_PARTIDA);
+                break;
+        }
+    }
+}

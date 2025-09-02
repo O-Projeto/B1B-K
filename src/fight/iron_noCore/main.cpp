@@ -63,7 +63,7 @@ int start_timeFrente=0,frenteTime=1000, enemyfront= 0, startFrente_flag = 0;
 // search
 float start_timeSearch = 0;
 bool flagInit = 0;
-int sensorRead[NUM_SENSORS];
+int sensorRead[NUM_SENSORS] = {0,0,0,0,0};
 int lastRead[NUM_SENSORS] = {0,0,0,0,0};
 
 Servo myServo;  
@@ -107,6 +107,7 @@ void setup() {
    LED.set(0);
    myServo.attach(SERVO);  
    myServo.write(90);  // Inicia em 90°
+   // zerar os sensores antes da luta começar
    for(int i = 0; i < NUM_SENSORS; i++)
    {
       lastRead[i] = 0;
@@ -223,7 +224,8 @@ void drive(int mot1, int mot2){
 void search()
 {
   if (!flagRe){
-  if (!sensor.sensorRead[0] && !sensor.sensorRead[1]  && !sensor.sensorRead[2] && !sensor.sensorRead[3] && !sensor.sensorRead[4]){
+  if (!sensor.sensorRead[0] && !sensor.sensorRead[1]  && !sensor.sensorRead[2] && 
+    !sensor.sensorRead[3] && !sensor.sensorRead[4]){
     // Se ainda não está virando, inicia a virada
     if (!virando) {
       inicioVirada = millis();  // Marca o tempo de início

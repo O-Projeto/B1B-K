@@ -16,6 +16,11 @@
 // class definition
 class Motor450
 {
+  private:
+    int _channel1;
+    int _channel2; 
+    int _resolution;
+    byte mDriverPin1, mDriverPin2;
   public:
     // Motor450 objects require two PWM-capable pins
     Motor450(byte driverPin1, byte driverPin2, int channel1, int channel2, int resolution);
@@ -24,11 +29,7 @@ class Motor450
     // Stop the motor. If brake value is 1 then motor is rapidly halted
     void stop(byte brake);
     void stop();
-  private:
-    int _channel1;
-    int _channel2; 
-    int _resolution;
-    byte mDriverPin1, mDriverPin2;
+
 };
 
 #endif // MOTOR450_H

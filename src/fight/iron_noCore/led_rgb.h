@@ -36,7 +36,7 @@ void led_rgb ::init(){
   pixels.setBrightness(100); // not so bright]
   pixels.fill(0x000000);
   pixels.show();
-  unsigned long start_time = millis();
+  start_time = millis();
 
 };
 
@@ -87,7 +87,7 @@ void led_rgb ::latch(const long time, int color){
         pixels.fill(0x000000);
         pixels.show();
   }
-   
+   flag = 0; 
 }
 
 void led_rgb::set(int color){

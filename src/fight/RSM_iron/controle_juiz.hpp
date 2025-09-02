@@ -10,7 +10,6 @@ class controle_juiz
 private:
     int pin;
     int button_read = -1;
-    /* data */
 public:
     controle_juiz(int PIN);
     void init();

@@ -25,16 +25,12 @@ void setup(){
 
 void loop(){
 
-    read_sensor_rgt = rgt_front.read();
-    read_sensor_lft = lft_front.read();
-
     border_rgt = rgt_front.detect_border();
     border_lft = lft_front.detect_border();
 
-    Serial.print(read_sensor_rgt);
+    rgt_front.printborder();
     Serial.print(", ");
-    Serial.print(read_sensor_lft);
-
+    lft_front.printborder();
     Serial.print(", ");
     Serial.print(border_rgt);
     Serial.print(", ");

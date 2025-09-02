@@ -8,12 +8,13 @@
 #define SREAD_5 19
 
 class JS40F_JSumo {
-public:
+private:
  int number_sensor = NUM_SENSORS;
- int sensorRead [NUM_SENSORS];
+
  int sensorPin [NUM_SENSORS] = {SREAD_1, SREAD_2, SREAD_3, SREAD_4, SREAD_5};
 
- 
+ public:
+    int sensorRead [NUM_SENSORS];
     void sensorsInit();
     void distanceRead();
     void printDistances();
