@@ -10,14 +10,14 @@
 // =================================================================
 // 1. OBJETOS DE HARDWARE
 // =================================================================
-JS40F_JSumo sensor;
+JS40F_JSumo  sensor;
 controle_juiz controle_sony(34);
-refletancia qr_dir(qrDir, 3000);
-refletancia qr_esq(qrEsq, 3000);
-led_rgb LED;
-Motor450 motordir = Motor450(AIN1, AIN2, offsetA, offsetB, 10);
-Motor450 motoresq = Motor450(BIN1, BIN2, offsetC, offsetD, 10);
-Servo myServo;
+refletancia  qr_dir(qrDir, 3000);
+refletancia  qr_esq(qrEsq, 3000);
+led_rgb      LED;
+Motor450     motordir = Motor450(AIN1, AIN2, offsetA, offsetB, 10);
+Motor450     motoresq = Motor450(BIN1, BIN2, offsetC, offsetD, 10);
+Servo        myServo;
 
 // =================================================================
 // 2. ESTADOS DO ROBÔ
@@ -27,7 +27,7 @@ enum EstadoRobo {
     BUSCANDO,
     ATACANDO,
     EVITANDO_BORDA,
-    FIM_DE_PARTIDA // NOVO ESTADO: Trava o robô permanentemente
+    FIM_DE_PARTIDA
 };
 
 // =================================================================
@@ -40,7 +40,10 @@ int vel_motor_dir = 0;
 int vel_motor_esq = 0;
 
 int lastRead[NUM_SENSORS] = {0};
-int ultimoComandoIR = 0;
+int ultimoComandoDeAcao = 0;
+
+bool evitarBordaAtivado = true;
+bool servoNaPosicaoDeAtaque = false; // Controla a posição do servo
 
 // =================================================================
 // 4. PROTÓTIPOS E SETUP
@@ -59,10 +62,14 @@ void setup() {
     sensor.sensorsInit();
     controle_sony.init();
     LED.init();
+    
     myServo.attach(SERVO);
-    myServo.write(90);
+    myServo.write(0); // Posição de repouso (para CIMA)
+    servoNaPosicaoDeAtaque = false;
 
-    LED.blink(AZUL, 1000);
+    Serial.println("--- ROBO INICIADO ---");
+
+    LED.set(BRANCO);
     delay(1000);
     mudarEstado(AGUARDANDO_INICIO);
 }
@@ -74,64 +81,104 @@ void loop() {
     processarComandoIR();
     executarMaquinaDeEstados();
     drive(vel_motor_dir, vel_motor_esq);
-    delay(10); // Um pequeno delay pode ajudar na estabilidade
 }
 
 // =================================================================
-// 6. LÓGICA DA MÁQUINA DE ESTADOS
+// 6. FUNÇÕES DE CONTROLE
 // =================================================================
-
-// Função centralizada para mudar de estado.
 void mudarEstado(EstadoRobo novoEstado) {
     if (estadoAtual != novoEstado) {
+        Serial.print("MUDANCA DE ESTADO: de ");
+        Serial.print(estadoAtual);
+        Serial.print(" para ");
+        Serial.println(novoEstado);
         estadoAtual = novoEstado;
-        tempoInicioEstado = millis(); // Reseta o timer do estado
+        tempoInicioEstado = millis();
+    }
+}
 
-        // Adiciona feedback visual para cada estado
-        switch (novoEstado) {
-            case ATACANDO:        LED.set(VERMELHO); break;
-            case BUSCANDO:        LED.set(VERDE); break;
-            case EVITANDO_BORDA:  LED.set(AMARELO); break;
-            case FIM_DE_PARTIDA:  LED.set(AZUL); break; // Azul sólido para indicar fim
-            case AGUARDANDO_INICIO: LED.latch(AZUL, 500); break;
-        }
+void processarComandoIR() {
+    if (estadoAtual == FIM_DE_PARTIDA) return;
+
+    int comandoReal = controle_sony.read();
+    
+    if (comandoReal != -1) {
+        Serial.print("--- Comando IR Recebido: ");
+        Serial.println(comandoReal);
+    }
+
+    int comandoEfetivo = comandoReal;
+
+    if (comandoReal == ONE) LED.latch(500, VERDE);
+    if (comandoReal == SEVEN) {
+        evitarBordaAtivado = !evitarBordaAtivado;
+        LED.latch(300, evitarBordaAtivado ? VERDE : VERMELHO);
+    }
+
+    if (comandoReal == ONE || comandoReal == TWO || comandoReal == TREE) {
+        ultimoComandoDeAcao = comandoReal;
+    }
+    
+    if (comandoReal == -1) {
+        comandoEfetivo = ultimoComandoDeAcao;
+    }
+
+    switch (comandoEfetivo) {
+        case ONE:
+            mudarEstado(AGUARDANDO_INICIO);
+            break;
+        case TWO:
+            if (estadoAtual == AGUARDANDO_INICIO) {
+                mudarEstado(BUSCANDO);
+            }
+            break;
+        case TREE:
+            Serial.println(">>> Comando TREE detectado! Solicitando FIM_DE_PARTIDA.");
+            mudarEstado(FIM_DE_PARTIDA);
+            break;
     }
 }
 
 void executarMaquinaDeEstados() {
-    // --- Leituras de sensores feitas uma vez por ciclo ---
-    sensor.distanceRead();
-    bool bordaDirDetectada = qr_dir.detect_border();
-    bool bordaEsqDetectada = qr_esq.detect_border();
-    bool bordaDetectada = bordaDirDetectada || bordaEsqDetectada;
+    bool bordaDirDetectada = false, bordaEsqDetectada = false, bordaDetectada = false, inimigoAVista = false;
 
-    bool inimigoAVista = false;
-    for(int i=0; i < NUM_SENSORS; i++) {
-        if (sensor.sensorRead[i]) {
-            inimigoAVista = true;
-            break;
+    if (estadoAtual == ATACANDO || estadoAtual == BUSCANDO || estadoAtual == EVITANDO_BORDA) {
+        sensor.distanceRead();
+        bordaDirDetectada = qr_dir.detect_border();
+        bordaEsqDetectada = qr_esq.detect_border();
+        bordaDetectada = bordaDirDetectada || bordaEsqDetectada;
+        for(int i=0; i < NUM_SENSORS; i++) {
+            if (sensor.sensorRead[i]) {
+                inimigoAVista = true;
+                break;
+            }
         }
     }
 
-    // Se virmos o inimigo, atualizamos a memória
-    if (inimigoAVista) {
-        for (int i = 0; i < NUM_SENSORS; i++) {
-            lastRead[i] = sensor.sensorRead[i];
-        }
-    }
-
-    // --- Lógica de Transição e Ação para cada estado ---
     switch (estadoAtual) {
         case AGUARDANDO_INICIO:
             vel_motor_dir = 0;
             vel_motor_esq = 0;
+            LED.set(AZUL);
+            // Garante que o servo está para CIMA
+            if (servoNaPosicaoDeAtaque) {
+                myServo.write(0);
+                servoNaPosicaoDeAtaque = false;
+            }
             break;
 
         case ATACANDO:
-            if (bordaDetectada) { mudarEstado(EVITANDO_BORDA); return; }
+            // Garante que o servo está para BAIXO
+            if (!servoNaPosicaoDeAtaque) {
+                myServo.write(90);
+                servoNaPosicaoDeAtaque = true;
+            }
+
+            if (bordaDetectada && evitarBordaAtivado) { mudarEstado(EVITANDO_BORDA); return; }
             if (!inimigoAVista) { mudarEstado(BUSCANDO); return; }
 
-            // AÇÃO: Lógica de ataque
+            for (int i = 0; i < NUM_SENSORS; i++) lastRead[i] = sensor.sensorRead[i];
+
             if (sensor.sensorRead[SENSOR_FRENTE_ESQ] && sensor.sensorRead[SENSOR_FRENTE_CTR] && sensor.sensorRead[SENSOR_FRENTE_DIR]) {
                 vel_motor_dir = 1000; vel_motor_esq = 1000;
             } else if (sensor.sensorRead[SENSOR_FRENTE_ESQ] && sensor.sensorRead[SENSOR_FRENTE_CTR]) {
@@ -139,41 +186,57 @@ void executarMaquinaDeEstados() {
             } else if (sensor.sensorRead[SENSOR_FRENTE_CTR] && sensor.sensorRead[SENSOR_FRENTE_DIR]) {
                 vel_motor_dir = 1000; vel_motor_esq = 1000;
             } else if (sensor.sensorRead[SENSOR_LATERAL_ESQ] && sensor.sensorRead[SENSOR_FRENTE_ESQ]) {
-                vel_motor_dir = 300; vel_motor_esq = 600;
+                vel_motor_dir = 300; vel_motor_esq = 800;
             } else if (sensor.sensorRead[SENSOR_FRENTE_DIR] && sensor.sensorRead[SENSOR_LATERAL_DIR]) {
-                vel_motor_dir = 600; vel_motor_esq = 300;
+                vel_motor_dir = 800; vel_motor_esq = 300;
             } else if (sensor.sensorRead[SENSOR_LATERAL_ESQ]) {
-                vel_motor_dir = 0; vel_motor_esq = 500;
+                vel_motor_dir = 0; vel_motor_esq = 600;
             } else if (sensor.sensorRead[SENSOR_LATERAL_DIR]) {
-                vel_motor_dir = 500; vel_motor_esq = 0;
+                vel_motor_dir = 600; vel_motor_esq = 0;
             } else if (sensor.sensorRead[SENSOR_FRENTE_CTR]) {
                 vel_motor_dir = 800; vel_motor_esq = 800;
+            } else if (sensor.sensorRead[SENSOR_FRENTE_DIR]){
+                vel_motor_dir = 600; vel_motor_esq = 800;
+            } else if (sensor.sensorRead[SENSOR_FRENTE_ESQ]){
+                vel_motor_dir = 800; vel_motor_esq = 600;
             }
             break;
 
-        case BUSCANDO:
-            if (bordaDetectada) { mudarEstado(EVITANDO_BORDA); return; }
-            if (inimigoAVista) { mudarEstado(ATACANDO); return; }
+        case BUSCANDO: {
+            // Garante que o servo está para BAIXO
+            if (!servoNaPosicaoDeAtaque) {
+                myServo.write(90);
+                servoNaPosicaoDeAtaque = true;
+            }
 
-            // AÇÃO: Lógica de busca
-            if (millis() - tempoInicioEstado > 500) {
-                vel_motor_dir = 400;
-                vel_motor_esq = 400;
-                for(int i = 0; i < NUM_SENSORS; i++) { lastRead[i] = 0; }
-            } else {
-                if (lastRead[SENSOR_LATERAL_ESQ] || lastRead[SENSOR_FRENTE_ESQ]) {
-                    vel_motor_dir = 400; vel_motor_esq = -200; // Vira para esquerda
-                } else if (lastRead[SENSOR_FRENTE_DIR] || lastRead[SENSOR_LATERAL_DIR]) {
-                    vel_motor_dir = -200; vel_motor_esq = 400; // Vira para direita
+            if (bordaDetectada && evitarBordaAtivado) { mudarEstado(EVITANDO_BORDA); return; }
+            if (inimigoAVista)  { mudarEstado(ATACANDO); return; }
+
+            unsigned long tempoNoEstadoAtual = millis() - tempoInicioEstado;
+            bool temMemoria = false;
+            for(int i = 0; i < NUM_SENSORS; i++) if (lastRead[i]) { temMemoria = true; break; }
+
+            if (tempoNoEstadoAtual <= 700) { 
+                if (temMemoria) {
+                    if (lastRead[SENSOR_LATERAL_ESQ] || lastRead[SENSOR_FRENTE_ESQ]) {
+                        vel_motor_dir = -200; vel_motor_esq = 400;
+                    } else {
+                        vel_motor_dir = 400; vel_motor_esq = -200;
+                    }
                 } else {
-                    vel_motor_dir = 400; vel_motor_esq = -400; // Gira
+                    vel_motor_dir = 400; vel_motor_esq = 400;
                 }
+            } else if (tempoNoEstadoAtual <= 1200) {
+                vel_motor_dir = 400; vel_motor_esq = 400;
+            } else {
+                tempoInicioEstado = millis(); 
             }
             break;
+        }
 
-        case EVITANDO_BORDA:
+        case EVITANDO_BORDA:{
             unsigned long tempo_decorrido = millis() - tempoInicioEstado;
-            unsigned int duracao_reacao = 200; // Duração padrão
+            unsigned int duracao_reacao = 200;
 
             if (bordaDirDetectada && bordaEsqDetectada) {
                 duracao_reacao = 200; vel_motor_dir = -500; vel_motor_esq = -500;
@@ -189,45 +252,18 @@ void executarMaquinaDeEstados() {
                 mudarEstado(BUSCANDO);
             }
             break;
+        }
         
-        // NOVO CASE: Garante que o robô permaneça parado.
-        case FIM_DE_PARTIDA:
+        case FIM_DE_PARTIDA:{
             vel_motor_dir = 0;
             vel_motor_esq = 0;
-            myServo.write(90); // Opcional: retorna o servo à posição inicial
+            // Garante que o servo está para CIMA
+            if (servoNaPosicaoDeAtaque) {
+                myServo.write(0);
+                servoNaPosicaoDeAtaque = false;
+            }
             break;
-    }
-}
-
-void processarComandoIR() {
-    // ALTERAÇÃO: Se a partida terminou, ignora qualquer novo comando.
-    if (estadoAtual == FIM_DE_PARTIDA) {
-        return;
-    }
-
-    int comando = controle_sony.read();
-
-    if (comando != -1) {
-        switch (comando) {
-            case ONE:
-                // Só funciona se estiver no estado inicial.
-                if (estadoAtual == AGUARDANDO_INICIO) {
-                    mudarEstado(AGUARDANDO_INICIO);
-                    myServo.write(90);
-                }
-                break;
-
-            case TWO:
-                if (estadoAtual == AGUARDANDO_INICIO) {
-                    myServo.write(180); // Posição de ataque
-                    mudarEstado(BUSCANDO);
-                }
-                break;
-
-            case TREE:
-                // ALTERAÇÃO: Muda para o estado final e sem retorno.
-                mudarEstado(FIM_DE_PARTIDA);
-                break;
         }
     }
 }
+

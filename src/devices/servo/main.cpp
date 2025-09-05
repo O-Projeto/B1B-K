@@ -30,15 +30,12 @@ void loop() {
 
   switch (read_ir) {
 
-    case FIVE:
-      myServo.write(180);
-      break;
-    
-    case SIX:
+    case SIX: // desce o servo
       myServo.write(0);
       break;
-    case TWO:
+    case TWO: // fica em pé
       myServo.write(90);
     break;
   }
+  last_ir = read_ir;
 }
