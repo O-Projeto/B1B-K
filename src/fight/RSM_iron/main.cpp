@@ -67,8 +67,6 @@ void setup() {
     myServo.write(0); // Posição de repouso (para CIMA)
     servoNaPosicaoDeAtaque = false;
 
-    Serial.println("--- ROBO INICIADO ---");
-
     LED.set(BRANCO);
     delay(1000);
     mudarEstado(AGUARDANDO_INICIO);
@@ -88,10 +86,6 @@ void loop() {
 // =================================================================
 void mudarEstado(EstadoRobo novoEstado) {
     if (estadoAtual != novoEstado) {
-        Serial.print("MUDANCA DE ESTADO: de ");
-        Serial.print(estadoAtual);
-        Serial.print(" para ");
-        Serial.println(novoEstado);
         estadoAtual = novoEstado;
         tempoInicioEstado = millis();
     }
@@ -101,11 +95,6 @@ void processarComandoIR() {
     if (estadoAtual == FIM_DE_PARTIDA) return;
 
     int comandoReal = controle_sony.read();
-    
-    if (comandoReal != -1) {
-        Serial.print("--- Comando IR Recebido: ");
-        Serial.println(comandoReal);
-    }
 
     int comandoEfetivo = comandoReal;
 
@@ -133,7 +122,6 @@ void processarComandoIR() {
             }
             break;
         case TREE:
-            Serial.println(">>> Comando TREE detectado! Solicitando FIM_DE_PARTIDA.");
             mudarEstado(FIM_DE_PARTIDA);
             break;
     }
@@ -159,7 +147,6 @@ void executarMaquinaDeEstados() {
         case AGUARDANDO_INICIO:
             vel_motor_dir = 0;
             vel_motor_esq = 0;
-            LED.set(AZUL);
             // Garante que o servo está para CIMA
             if (servoNaPosicaoDeAtaque) {
                 myServo.write(0);
@@ -186,9 +173,9 @@ void executarMaquinaDeEstados() {
             } else if (sensor.sensorRead[SENSOR_FRENTE_CTR] && sensor.sensorRead[SENSOR_FRENTE_DIR]) {
                 vel_motor_dir = 1000; vel_motor_esq = 1000;
             } else if (sensor.sensorRead[SENSOR_LATERAL_ESQ] && sensor.sensorRead[SENSOR_FRENTE_ESQ]) {
-                vel_motor_dir = 300; vel_motor_esq = 800;
+                vel_motor_dir = 400; vel_motor_esq = 800;
             } else if (sensor.sensorRead[SENSOR_FRENTE_DIR] && sensor.sensorRead[SENSOR_LATERAL_DIR]) {
-                vel_motor_dir = 800; vel_motor_esq = 300;
+                vel_motor_dir = 800; vel_motor_esq = 400;
             } else if (sensor.sensorRead[SENSOR_LATERAL_ESQ]) {
                 vel_motor_dir = 0; vel_motor_esq = 600;
             } else if (sensor.sensorRead[SENSOR_LATERAL_DIR]) {
@@ -236,14 +223,14 @@ void executarMaquinaDeEstados() {
 
         case EVITANDO_BORDA:{
             unsigned long tempo_decorrido = millis() - tempoInicioEstado;
-            unsigned int duracao_reacao = 200;
+            unsigned int duracao_reacao = 400;
 
             if (bordaDirDetectada && bordaEsqDetectada) {
                 duracao_reacao = 200; vel_motor_dir = -500; vel_motor_esq = -500;
             } else if (bordaDirDetectada) {
-                duracao_reacao = 300; vel_motor_dir = -700; vel_motor_esq = -250;
+                duracao_reacao = 300; vel_motor_dir = 0; vel_motor_esq = -500;
             } else if (bordaEsqDetectada) {
-                duracao_reacao = 300; vel_motor_dir = -250; vel_motor_esq = -500;
+                duracao_reacao = 300; vel_motor_dir = -500; vel_motor_esq = 0;
             } else {
                 duracao_reacao = 150; vel_motor_dir = -400; vel_motor_esq = -400;
             }
@@ -261,6 +248,7 @@ void executarMaquinaDeEstados() {
             if (servoNaPosicaoDeAtaque) {
                 myServo.write(0);
                 servoNaPosicaoDeAtaque = false;
+                LED.set(VERMELHO);
             }
             break;
         }
