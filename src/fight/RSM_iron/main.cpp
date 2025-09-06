@@ -98,7 +98,7 @@ void processarComandoIR() {
 
     int comandoEfetivo = comandoReal;
 
-    if (comandoReal == ONE) LED.latch(500, VERDE);
+    if (comandoReal == ONE) LED.blink(1000, VERDE);
     if (comandoReal == SEVEN) {
         evitarBordaAtivado = !evitarBordaAtivado;
         LED.latch(300, evitarBordaAtivado ? VERDE : VERMELHO);
