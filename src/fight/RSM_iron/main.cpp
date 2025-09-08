@@ -42,8 +42,10 @@ int vel_motor_esq = 0;
 int lastRead[NUM_SENSORS] = {0};
 int ultimoComandoDeAcao = 0;
 
-bool evitarBordaAtivado = true;
+bool bordaAtivado = true;
 bool servoNaPosicaoDeAtaque = false; // Controla a posição do servo
+
+bool delaySensor = true;
 
 // =================================================================
 // 4. PROTÓTIPOS E SETUP
@@ -98,12 +100,6 @@ void processarComandoIR() {
 
     int comandoEfetivo = comandoReal;
 
-    if (comandoReal == ONE) LED.blink(1000, VERDE);
-    if (comandoReal == SEVEN) {
-        evitarBordaAtivado = !evitarBordaAtivado;
-        LED.latch(300, evitarBordaAtivado ? VERDE : VERMELHO);
-    }
-
     if (comandoReal == ONE || comandoReal == TWO || comandoReal == TREE) {
         ultimoComandoDeAcao = comandoReal;
     }
@@ -114,15 +110,20 @@ void processarComandoIR() {
 
     switch (comandoEfetivo) {
         case ONE:
-            mudarEstado(AGUARDANDO_INICIO);
+            LED.blinkAlternado(BRANCO, MAGENTA);
             break;
         case TWO:
+            if (delaySensor) {delay(5); delaySensor = false;}
             if (estadoAtual == AGUARDANDO_INICIO) {
                 mudarEstado(BUSCANDO);
             }
             break;
         case TREE:
             mudarEstado(FIM_DE_PARTIDA);
+            break;
+        case SEVEN:
+            bordaAtivado = false;
+            LED.latch(300, AMARELO);
             break;
     }
 }
@@ -161,7 +162,7 @@ void executarMaquinaDeEstados() {
                 servoNaPosicaoDeAtaque = true;
             }
 
-            if (bordaDetectada && evitarBordaAtivado) { mudarEstado(EVITANDO_BORDA); return; }
+            if (bordaDetectada && bordaAtivado) { mudarEstado(EVITANDO_BORDA); return; }
             if (!inimigoAVista) { mudarEstado(BUSCANDO); return; }
 
             for (int i = 0; i < NUM_SENSORS; i++) lastRead[i] = sensor.sensorRead[i];
@@ -196,7 +197,7 @@ void executarMaquinaDeEstados() {
                 servoNaPosicaoDeAtaque = true;
             }
 
-            if (bordaDetectada && evitarBordaAtivado) { mudarEstado(EVITANDO_BORDA); return; }
+            if (bordaDetectada && bordaAtivado) { mudarEstado(EVITANDO_BORDA); return; }
             if (inimigoAVista)  { mudarEstado(ATACANDO); return; }
 
             unsigned long tempoNoEstadoAtual = millis() - tempoInicioEstado;
@@ -228,11 +229,11 @@ void executarMaquinaDeEstados() {
             if (bordaDirDetectada && bordaEsqDetectada) {
                 duracao_reacao = 200; vel_motor_dir = -500; vel_motor_esq = -500;
             } else if (bordaDirDetectada) {
-                duracao_reacao = 300; vel_motor_dir = 0; vel_motor_esq = -500;
+                duracao_reacao = 300; vel_motor_dir = 0; vel_motor_esq = -600;
             } else if (bordaEsqDetectada) {
-                duracao_reacao = 300; vel_motor_dir = -500; vel_motor_esq = 0;
+                duracao_reacao = 300; vel_motor_dir = -600; vel_motor_esq = 0;
             } else {
-                duracao_reacao = 150; vel_motor_dir = -400; vel_motor_esq = -400;
+                duracao_reacao = 250; vel_motor_dir = -400; vel_motor_esq = -400;
             }
 
             if (tempo_decorrido >= duracao_reacao) {

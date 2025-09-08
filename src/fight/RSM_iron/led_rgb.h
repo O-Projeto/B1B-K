@@ -19,7 +19,7 @@ private:
     
     // Variáveis para a função latch
     unsigned long latchStartTime = 0;
-    int latchColor = PRETO;
+    int latchColor = 0x000000;
     bool latchAtivo = false;
 
 public:
@@ -33,7 +33,7 @@ public:
     void blink(const long interval, int color);
 
     // Nova função para piscar duas cores de forma alternada
-    void blinkAlternado(const long interval, int color1, int color2);
+    void blinkAlternado(int color1, int color2);
     
     // Função para manter uma cor por um tempo e depois apagar (agora corrigida)
     void latch(const long time, int color);
@@ -69,11 +69,7 @@ void led_rgb ::blink(const long time, int color){
     }
    
   }
-void led_rgb::blinkAlternado(const long interval, int color1, int color2) {
-    unsigned long currentMillis = millis();
-
-    if (currentMillis - previousMillis >= interval) {
-        previousMillis = currentMillis; // Atualiza o tempo
+void led_rgb::blinkAlternado(int color1, int color2) {
 
         // Alterna o estado para saber qual cor mostrar
         estadoBlink = !estadoBlink;
@@ -84,8 +80,8 @@ void led_rgb::blinkAlternado(const long interval, int color1, int color2) {
             pixels.fill(color2); // Mostra a segunda cor
         }
         pixels.show(); // Envia a cor para o LED
-    }
 }
+
 
 // Função latch corrigida: apenas configura as variáveis
 void led_rgb::latch(const long time, int color) {
