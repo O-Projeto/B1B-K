@@ -75,9 +75,13 @@ void led_rgb::blinkAlternado(int color1, int color2) {
         estadoBlink = !estadoBlink;
 
         if (estadoBlink) {
-            pixels.fill(color1); // Mostra a primeira cor
+            pixels.fill(color1);
+            Serial.println("cor1"); // Mostra a primeira cor
+            delay(100);
         } else {
-            pixels.fill(color2); // Mostra a segunda cor
+            pixels.fill(color2); 
+            Serial.println("color2");// Mostra a segunda cor
+            delay(100);
         }
         pixels.show(); // Envia a cor para o LED
 }

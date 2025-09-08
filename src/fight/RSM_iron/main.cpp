@@ -12,8 +12,8 @@
 // =================================================================
 JS40F_JSumo  sensor;
 controle_juiz controle_sony(34);
-refletancia  qr_dir(qrDir, 3000);
-refletancia  qr_esq(qrEsq, 3000);
+refletancia  qr_dir(qrDir, 300);
+refletancia  qr_esq(qrEsq, 300);
 led_rgb      LED;
 Motor450     motordir = Motor450(AIN1, AIN2, offsetA, offsetB, 10);
 Motor450     motoresq = Motor450(BIN1, BIN2, offsetC, offsetD, 10);
@@ -27,6 +27,9 @@ enum EstadoRobo {
     BUSCANDO,
     ATACANDO,
     EVITANDO_BORDA,
+    FRENTE_UM_POUCO,
+    DELAY_1SEC,
+    MEIA_LUA,
     FIM_DE_PARTIDA
 };
 
@@ -46,7 +49,9 @@ bool bordaAtivado = true;
 bool servoNaPosicaoDeAtaque = false; // Controla a posição do servo
 
 bool delaySensor = true;
-
+bool frente = false;
+bool delay_1seg = false;
+bool meiaLua = false;
 // =================================================================
 // 4. PROTÓTIPOS E SETUP
 // =================================================================
@@ -99,7 +104,6 @@ void processarComandoIR() {
     int comandoReal = controle_sony.read();
 
     int comandoEfetivo = comandoReal;
-
     if (comandoReal == ONE || comandoReal == TWO || comandoReal == TREE) {
         ultimoComandoDeAcao = comandoReal;
     }
@@ -110,10 +114,11 @@ void processarComandoIR() {
 
     switch (comandoEfetivo) {
         case ONE:
-            LED.blinkAlternado(BRANCO, MAGENTA);
-            break;
+             if (comandoReal == ONE) {LED.blinkAlternado(MAGENTA, AZUL);}
+             break;
         case TWO:
-            if (delaySensor) {delay(5); delaySensor = false;}
+            if (delaySensor) {
+                delay(50); delaySensor = false;}
             if (estadoAtual == AGUARDANDO_INICIO) {
                 mudarEstado(BUSCANDO);
             }
@@ -121,9 +126,23 @@ void processarComandoIR() {
         case TREE:
             mudarEstado(FIM_DE_PARTIDA);
             break;
-        case SEVEN:
+        case HOME:
+            if (estadoAtual == AGUARDANDO_INICIO){
+                frente = true;
+                LED.set(LARANJA);
+            }
+             break;
+        case RETURN:
             bordaAtivado = false;
-            LED.latch(300, AMARELO);
+            LED.set(VERDE);
+            break;
+        case OPTIONS: 
+            delay_1seg = true;
+            LED.set( CIANO);
+            break;
+        case DISPLAY:
+            meiaLua = true;
+            LED.set(VERMELHO);
             break;
     }
 }
@@ -143,6 +162,7 @@ void executarMaquinaDeEstados() {
             }
         }
     }
+
 
     switch (estadoAtual) {
         case AGUARDANDO_INICIO:
@@ -164,7 +184,6 @@ void executarMaquinaDeEstados() {
 
             if (bordaDetectada && bordaAtivado) { mudarEstado(EVITANDO_BORDA); return; }
             if (!inimigoAVista) { mudarEstado(BUSCANDO); return; }
-
             for (int i = 0; i < NUM_SENSORS; i++) lastRead[i] = sensor.sensorRead[i];
 
             if (sensor.sensorRead[SENSOR_FRENTE_ESQ] && sensor.sensorRead[SENSOR_FRENTE_CTR] && sensor.sensorRead[SENSOR_FRENTE_DIR]) {
@@ -174,19 +193,19 @@ void executarMaquinaDeEstados() {
             } else if (sensor.sensorRead[SENSOR_FRENTE_CTR] && sensor.sensorRead[SENSOR_FRENTE_DIR]) {
                 vel_motor_dir = 1000; vel_motor_esq = 1000;
             } else if (sensor.sensorRead[SENSOR_LATERAL_ESQ] && sensor.sensorRead[SENSOR_FRENTE_ESQ]) {
-                vel_motor_dir = 400; vel_motor_esq = 800;
+                vel_motor_dir = 800; vel_motor_esq = 500;
             } else if (sensor.sensorRead[SENSOR_FRENTE_DIR] && sensor.sensorRead[SENSOR_LATERAL_DIR]) {
-                vel_motor_dir = 800; vel_motor_esq = 400;
+                vel_motor_dir = 400; vel_motor_esq = 800;
             } else if (sensor.sensorRead[SENSOR_LATERAL_ESQ]) {
-                vel_motor_dir = 0; vel_motor_esq = 600;
-            } else if (sensor.sensorRead[SENSOR_LATERAL_DIR]) {
                 vel_motor_dir = 600; vel_motor_esq = 0;
+            } else if (sensor.sensorRead[SENSOR_LATERAL_DIR]) {
+                vel_motor_dir = 0; vel_motor_esq = 700;
             } else if (sensor.sensorRead[SENSOR_FRENTE_CTR]) {
                 vel_motor_dir = 800; vel_motor_esq = 800;
             } else if (sensor.sensorRead[SENSOR_FRENTE_DIR]){
-                vel_motor_dir = 600; vel_motor_esq = 800;
+                vel_motor_dir = 300; vel_motor_esq = 800;
             } else if (sensor.sensorRead[SENSOR_FRENTE_ESQ]){
-                vel_motor_dir = 800; vel_motor_esq = 600;
+                vel_motor_dir = 800; vel_motor_esq = 700;
             }
             break;
 
@@ -196,29 +215,23 @@ void executarMaquinaDeEstados() {
                 myServo.write(90);
                 servoNaPosicaoDeAtaque = true;
             }
-
+            if (frente) {mudarEstado(FRENTE_UM_POUCO);return;}
+            if (delay_1seg){ mudarEstado(DELAY_1SEC);}
+            if(meiaLua){mudarEstado(MEIA_LUA);}
             if (bordaDetectada && bordaAtivado) { mudarEstado(EVITANDO_BORDA); return; }
             if (inimigoAVista)  { mudarEstado(ATACANDO); return; }
-
-            unsigned long tempoNoEstadoAtual = millis() - tempoInicioEstado;
+           // unsigned long tempoNoEstadoAtual = millis() - tempoInicioEstado;
             bool temMemoria = false;
             for(int i = 0; i < NUM_SENSORS; i++) if (lastRead[i]) { temMemoria = true; break; }
-
-            if (tempoNoEstadoAtual <= 700) { 
                 if (temMemoria) {
                     if (lastRead[SENSOR_LATERAL_ESQ] || lastRead[SENSOR_FRENTE_ESQ]) {
-                        vel_motor_dir = -200; vel_motor_esq = 400;
-                    } else {
-                        vel_motor_dir = 400; vel_motor_esq = -200;
-                    }
+                        vel_motor_dir = 300; vel_motor_esq = 0;
+                    } else if (lastRead[SENSOR_LATERAL_DIR] || lastRead[SENSOR_FRENTE_DIR]){
+                        vel_motor_dir = 0; vel_motor_esq = 500;
+                    } else {vel_motor_dir = 200; vel_motor_esq = 200;}
                 } else {
-                    vel_motor_dir = 400; vel_motor_esq = 400;
+                    vel_motor_dir = 0; vel_motor_esq = 0;
                 }
-            } else if (tempoNoEstadoAtual <= 1200) {
-                vel_motor_dir = 400; vel_motor_esq = 400;
-            } else {
-                tempoInicioEstado = millis(); 
-            }
             break;
         }
 
@@ -253,6 +266,29 @@ void executarMaquinaDeEstados() {
             }
             break;
         }
+
+        case FRENTE_UM_POUCO:{
+            drive(300, 700);
+            delay(100);
+            drive(0,0);
+            frente = false;
+            mudarEstado(BUSCANDO);
+            break;
+        }
+        case DELAY_1SEC:{
+            drive(0,0);
+            delay(700);
+            delay_1seg = false;
+            mudarEstado(FRENTE_UM_POUCO);
+        }
+        case MEIA_LUA: {
+            drive (400,500);
+            delay(200);
+            meiaLua =false;
+            mudarEstado(BUSCANDO);   
+            break;
+        }
+
     }
 }
 

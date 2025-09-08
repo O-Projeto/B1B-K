@@ -15,6 +15,12 @@
 #define FIVE 4
 #define SIX 5
 #define SEVEN 6
+#define SYNC_MENU 88
+#define DISPLAY 58
+#define OPTIONS 54
+#define HOME 96
+#define RETURN 35
+#define GUIDE 14
 
 // these constants are used to allow you to make your motor configuration 
 // line up with function names like forward.  Value can be 1 or -1
@@ -36,9 +42,9 @@ const int offsetD = 4;
 #define BRANCO 16777215
 #define LARANJA 16542467
 
-#define SENSOR_LATERAL_ESQ 0
-#define SENSOR_FRENTE_ESQ  1
+#define SENSOR_LATERAL_ESQ 4
+#define SENSOR_FRENTE_ESQ  3
 #define SENSOR_FRENTE_CTR  2
-#define SENSOR_FRENTE_DIR  3
-#define SENSOR_LATERAL_DIR 4
+#define SENSOR_FRENTE_DIR  1
+#define SENSOR_LATERAL_DIR 0
 #define NUM_SENSORES 5
