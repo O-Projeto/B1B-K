@@ -30,6 +30,8 @@ enum EstadoRobo {
     FRENTE_UM_POUCO,
     DELAY_1SEC,
     MEIA_LUA,
+    ZIGUE_ZAGUE,
+    DE_COSTAS,
     FIM_DE_PARTIDA
 };
 
@@ -52,6 +54,8 @@ bool delaySensor = true;
 bool frente = false;
 bool delay_1seg = false;
 bool meiaLua = false;
+bool zigueZague = false;
+bool deCostas   = false;
 // =================================================================
 // 4. PROTÓTIPOS E SETUP
 // =================================================================
@@ -114,7 +118,7 @@ void processarComandoIR() {
 
     switch (comandoEfetivo) {
         case ONE:
-             if (comandoReal == ONE) {LED.blinkAlternado(MAGENTA, AZUL);}
+             if (comandoReal == ONE) {LED.blink(MAGENTA);}//{LED.blinkAlternado(MAGENTA, AZUL);}
              break;
         case TWO:
             if (delaySensor) {
@@ -143,6 +147,14 @@ void processarComandoIR() {
         case DISPLAY:
             meiaLua = true;
             LED.set(VERMELHO);
+            break;
+        case GUIDE:
+            zigueZague = true;
+            LED.set(BRANCO);
+            break;
+        case SYNC_MENU:
+            deCostas = true;
+            LED.set(AMARELO);
             break;
     }
 }
@@ -217,6 +229,8 @@ void executarMaquinaDeEstados() {
             }
             if (frente) {mudarEstado(FRENTE_UM_POUCO);return;}
             if (delay_1seg){ mudarEstado(DELAY_1SEC);}
+            if (zigueZague){mudarEstado(ZIGUE_ZAGUE);}
+            if (deCostas) {mudarEstado(DE_COSTAS);}
             if(meiaLua){mudarEstado(MEIA_LUA);}
             if (bordaDetectada && bordaAtivado) { mudarEstado(EVITANDO_BORDA); return; }
             if (inimigoAVista)  { mudarEstado(ATACANDO); return; }
@@ -237,16 +251,16 @@ void executarMaquinaDeEstados() {
 
         case EVITANDO_BORDA:{
             unsigned long tempo_decorrido = millis() - tempoInicioEstado;
-            unsigned int duracao_reacao = 400;
+            unsigned int duracao_reacao = 700;
 
             if (bordaDirDetectada && bordaEsqDetectada) {
-                duracao_reacao = 200; vel_motor_dir = -500; vel_motor_esq = -500;
+                duracao_reacao = 200; vel_motor_dir = -500; vel_motor_esq = -700;
             } else if (bordaDirDetectada) {
-                duracao_reacao = 300; vel_motor_dir = 0; vel_motor_esq = -600;
+                duracao_reacao = 400; vel_motor_dir = -800; vel_motor_esq = 0;
             } else if (bordaEsqDetectada) {
-                duracao_reacao = 300; vel_motor_dir = -600; vel_motor_esq = 0;
+                duracao_reacao = 300; vel_motor_dir = 0; vel_motor_esq = -600;
             } else {
-                duracao_reacao = 250; vel_motor_dir = -400; vel_motor_esq = -400;
+                duracao_reacao = 600; vel_motor_dir = -400; vel_motor_esq = -400;
             }
 
             if (tempo_decorrido >= duracao_reacao) {
@@ -277,9 +291,10 @@ void executarMaquinaDeEstados() {
         }
         case DELAY_1SEC:{
             drive(0,0);
-            delay(700);
+            delay(350);
             delay_1seg = false;
             mudarEstado(FRENTE_UM_POUCO);
+            break;
         }
         case MEIA_LUA: {
             drive (400,500);
@@ -288,7 +303,37 @@ void executarMaquinaDeEstados() {
             mudarEstado(BUSCANDO);   
             break;
         }
-
+        case ZIGUE_ZAGUE: {
+            /*unsigned long tempo_decorrido = millis() - tempoInicioEstado;
+            if (tempo_decorrido > 700){
+                zigueZague = false;
+                mudarEstado(BUSCANDO);
+                return;
+            }
+            if ((tempo_decorrido / 150) % 2 == 0) {
+                drive(300, 0); // Curva para a esquerda
+            } else {
+                drive(0, 700); // Curva para a direita
+            }
+            drive(200, 600);*/
+            drive(0, 700); // Curva para a esquerda
+            delay(150);
+            drive(300,700);
+            delay(75);
+            drive(300, 0); // Curva para a direita
+            delay(150);
+            zigueZague = false;
+            mudarEstado(BUSCANDO);
+            break;
     }
+        case DE_COSTAS: {
+            drive(-300, 700);
+            delay(300);
+            deCostas = false;
+            mudarEstado(BUSCANDO);
+            break;
+        }
+    }
+
 }
 

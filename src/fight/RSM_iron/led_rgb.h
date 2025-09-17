@@ -30,7 +30,7 @@ public:
     void set(int color);
     
     // Função para piscar uma única cor (liga/desliga)
-    void blink(const long interval, int color);
+    void blink(int color);
 
     // Nova função para piscar duas cores de forma alternada
     void blinkAlternado(int color1, int color2);
@@ -52,13 +52,8 @@ void led_rgb ::init(){
 
 };
 
-void led_rgb ::blink(const long time, int color){
+void led_rgb ::blink( int color){
 
-  unsigned long currentMillis = millis();
-
-  if (currentMillis - previousMillis >= time) {
-    // save the last time you blinked the LED
-    previousMillis = currentMillis;
     estadoBlink = !estadoBlink;
            if (estadoBlink) {
             pixels.fill(color); // Liga o LED com a cor desejada
@@ -68,7 +63,6 @@ void led_rgb ::blink(const long time, int color){
         pixels.show();
     }
    
-  }
 void led_rgb::blinkAlternado(int color1, int color2) {
 
         // Alterna o estado para saber qual cor mostrar
